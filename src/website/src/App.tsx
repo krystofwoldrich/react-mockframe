@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Smartphone, Sun, Moon, Github } from 'lucide-react'
+import { Smartphone, Sun, Moon, Github, Package } from 'lucide-react'
+import { MatterCredit } from '@matterdev/credit/react'
 import MockFrameDemo from './demos/MockFrameDemo'
 
 function ThemeToggle({ theme, setTheme }: { theme: string; setTheme: (t: string) => void }) {
@@ -78,6 +79,20 @@ function Navigation({ theme, setTheme }: { theme: string; setTheme: (t: string) 
           <div className="flex items-center gap-4">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <a
+              href="https://www.npmjs.com/package/react-mockframe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg transition-all"
+              style={{
+                background: 'var(--color-bg-tertiary)',
+                color: 'var(--color-text-secondary)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              <Package className="w-4 h-4" />
+              <span className="text-sm font-medium">npm</span>
+            </a>
+            <a
               href="https://github.com/mbdev3/react-mockframe"
               target="_blank"
               rel="noopener noreferrer"
@@ -139,19 +154,10 @@ export default function App() {
           borderTop: '1px solid var(--color-border)',
         }}
       >
-        <p>
-          Developed by{' '}
-          <a
-            href="https://mohammedbanani.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--color-accent)' }}
-            className="hover:underline"
-          >
-            Mohammed Banani
-          </a>
-          {' '}· MIT License · {new Date().getFullYear()}
-        </p>
+        <div className="flex justify-center">
+          <MatterCredit source="react-mockframe" />
+        </div>
+        <p className="mt-4">MIT License · {new Date().getFullYear()}</p>
       </footer>
     </div>
   )

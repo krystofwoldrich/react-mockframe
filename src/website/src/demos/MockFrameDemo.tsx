@@ -23,6 +23,9 @@ const colorMap: Record<string, string> = {
   'glacier': '#c3cede',
   'burgundy': '#6b3a42',
   'natural-titanium': '#b5aea4',
+  // iPhone Duo colors
+  'night-sky': '#3a4659',
+  'star-white': '#ece9e3',
   'space-gray': '#3a3a3a',
   'space-black': '#2d2b2e',
   // Pixel 10 colors
@@ -330,7 +333,23 @@ function MockAppScreen({ device, landscape, deviceWidth, deviceHeight }: {
 }
 
 // Devices that have a notch or dynamic island
-const devicesWithNotch: DeviceName[] = ['iPhone X', 'iPhone 17', 'iPhone 18 Pro', 'MacBook Pro']
+const devicesWithNotch: DeviceName[] = ['iPhone X', 'iPhone 17', 'iPhone 18 Pro', 'iPhone Duo', 'MacBook Pro']
+
+// iPhone Duo poses: label, natural orientation, and the framed size (screen + bezels) for auto-zoom
+type DuoPose = 'closed' | 'half-open' | 'open'
+const duoPoses: { value: DuoPose, label: string, landscape: boolean, size: [number, number] }[] = [
+  { value: 'closed', label: 'Closed', landscape: false, size: [508, 710] },
+  { value: 'half-open', label: 'Half-open', landscape: true, size: [993, 787] },
+  { value: 'open', label: 'Open', landscape: true, size: [992, 710] },
+]
+
+// Device picker order: newest and most-used first, legacy models last
+const deviceOrder: DeviceName[] = [
+  'iPhone 18 Pro', 'iPhone Duo', 'MacBook Pro', 'iPad Pro', 'iPhone 17',
+  'Pixel 10', 'Galaxy S25', 'iPad Mini', 'MacBook Pro 2020', 'iPhone X', 'iPhone 8', 'iPhone 8 Plus',
+]
+// Any device added to the library later still shows up, at the end
+const orderedDevices = [...deviceOrder, ...DeviceNames.filter((d) => !deviceOrder.includes(d))]
 
 // Older colour names the library still accepts for compatibility; hidden from the picker
 const legacyColors: Partial<Record<DeviceName, readonly string[]>> = {
@@ -344,7 +363,10 @@ export default function MockFrameDemo() {
   const [device, setDevice] = useState<DeviceName>('iPhone 18 Pro')
   const [landscape, setLandscape] = useState(false)
   const [hideNotch, setHideNotch] = useState(false)
+  const [pose, setPose] = useState<DuoPose>('closed')
   const deviceInfo = DeviceOptions[device]
+  const isDuo = device === 'iPhone Duo'
+  const duoPose = duoPoses.find((p) => p.value === pose)!
   const colors = deviceInfo.colors.filter((c) => !legacyColors[device]?.includes(c))
   const [color, setColor] = useState(colors[0])
   const [previewUrl, setPreviewUrl] = useState('')
@@ -399,6 +421,15 @@ export default function MockFrameDemo() {
     const containerWidth = container.clientWidth - 200 // Padding for sides
     const containerHeight = container.clientHeight - 100 // Padding for top/bottom
 
+    // The Duo's framed size depends on the pose (and turns with the orientation)
+    if (isDuo) {
+      const [w, h] = duoPose.size
+      const turned = pose !== 'half-open' && landscape !== duoPose.landscape
+      const [fw, fh] = turned ? [h, w] : [w, h]
+      // Same breathing room as the other phones
+      return Math.max(0.25, Math.min(1.5, Math.min(containerWidth / (fw * 1.3), containerHeight / (fh * 1.3))))
+    }
+
     // Get device dimensions (including frame chrome - roughly 20-30% extra)
     const deviceWidth = landscape ? (deviceInfo.height || 812) : (deviceInfo.width || 375)
     const deviceHeight = landscape ? (deviceInfo.width || 375) : (deviceInfo.height || 812)
@@ -419,7 +450,7 @@ export default function MockFrameDemo() {
 
     // Clamp between 0.25 and 1.5
     return Math.max(0.25, Math.min(1.5, optimalZoom))
-  }, [deviceInfo.width, deviceInfo.height, landscape, device])
+  }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose])
 
   // Update auto zoom when container or device changes
   useEffect(() => {
@@ -454,7 +485,12 @@ export default function MockFrameDemo() {
     if (colors.length > 0 && color) {
       props.push(`color="${color}"`)
     }
-    if (deviceInfo.hasLandscape && landscape) {
+    if (isDuo) {
+      if (pose !== 'closed') props.push(`pose="${pose}"`)
+      if (pose !== 'half-open' && landscape !== duoPose.landscape) {
+        props.push(landscape ? 'landscape' : 'landscape={false}')
+      }
+    } else if (deviceInfo.hasLandscape && landscape) {
       props.push('landscape')
     }
     if (deviceHasNotch && hideNotch) {
@@ -465,7 +501,7 @@ export default function MockFrameDemo() {
 >
   <YourAppContent />
 </MockFrame>`
-  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch])
+  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose])
 
   const handleCopy = async () => {
     try {
@@ -657,16 +693,20 @@ export default function MockFrameDemo() {
               onChange={(value) => {
                 const newDevice = value as DeviceName
                 setDevice(newDevice)
+                if (newDevice === 'iPhone Duo') {
+                  setPose('closed')
+                  setLandscape(false)
+                }
                 const newColors = DeviceOptions[newDevice].colors
                 setColor(newColors[0])
               }}
-              options={DeviceNames.map((name) => ({ value: name, label: name }))}
+              options={orderedDevices.map((name) => ({ value: name, label: name }))}
             />
             <div
               className="flex items-center gap-3 mt-3 text-xs"
               style={{ color: 'var(--color-text-tertiary)' }}
             >
-              <span>{deviceInfo.width} × {deviceInfo.height}</span>
+              <span>{isDuo && pose !== 'closed' ? '951 × 669' : `${deviceInfo.width} × ${deviceInfo.height}`}</span>
               {deviceInfo.hasLandscape && (
                 <span
                   className="px-2 py-0.5 rounded-full"
@@ -716,8 +756,39 @@ export default function MockFrameDemo() {
             </div>
           )}
 
+          {/* Fold pose (iPhone Duo) */}
+          {isDuo && (
+            <div className="glass-card p-5">
+              <label
+                className="block text-sm font-medium mb-3"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                Fold
+              </label>
+              <div className="flex gap-2">
+                {duoPoses.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setPose(opt.value)
+                      setLandscape(opt.landscape)
+                    }}
+                    className="flex-1 px-3 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: pose === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
+                      color: pose === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
+                      border: `1px solid ${pose === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Orientation */}
-          {deviceInfo.hasLandscape && (
+          {deviceInfo.hasLandscape && !(isDuo && pose === 'half-open') && (
             <div className="glass-card p-5">
               <label
                 className="block text-sm font-medium mb-3"
@@ -755,7 +826,7 @@ export default function MockFrameDemo() {
                 className="block text-sm font-medium mb-3"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                {device === 'iPhone 17' || device === 'iPhone 18 Pro' ? 'Dynamic Island' : 'Notch'}
+                {isDuo ? 'Camera' : device === 'iPhone 17' || device === 'iPhone 18 Pro' ? 'Dynamic Island' : 'Notch'}
               </label>
               <div className="flex gap-2">
                 {[
@@ -1239,6 +1310,7 @@ export default function MockFrameDemo() {
                   device={device}
                   {...(colors.length > 0 ? { color } : {})}
                   landscape={deviceInfo.hasLandscape ? landscape : undefined}
+                  {...(isDuo ? { pose } : {})}
                   zoom={effectiveZoom}
                   animated
                   hideNotch={hideNotch}
@@ -1265,8 +1337,8 @@ export default function MockFrameDemo() {
                     />
                   ) : (
                     <MockAppScreen
-                      device={device}
-                      landscape={deviceInfo.hasLandscape && landscape}
+                      device={isDuo ? 'MacBook' : device} // the Duo shows one wallpaper in every pose, so a fold reads as one screen
+                      landscape={!isDuo && deviceInfo.hasLandscape && landscape}
                       deviceWidth={deviceInfo.width}
                       deviceHeight={deviceInfo.height}
                     />
