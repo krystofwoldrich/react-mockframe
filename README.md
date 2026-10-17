@@ -2,6 +2,8 @@
 
 Device mockups for React. Showcase your apps in realistic phone, tablet, and laptop frames. Perfect for SaaS landing pages, product demos, and marketing websites.
 
+Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_source=react-mockframe&utm_medium=readme).
+
 [![npm version](https://img.shields.io/npm/v/react-mockframe.svg)](https://www.npmjs.com/package/react-mockframe)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-blue.svg)](http://typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -12,8 +14,8 @@ Device mockups for React. Showcase your apps in realistic phone, tablet, and lap
 
 ## Features
 
-- **11 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 17, iPhone 18 Pro, Pixel 10, Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
-- **Measured, Not Eyeballed** - iPhone 17, iPhone 18 Pro, iPad Pro and MacBook Pro frames are measured from Apple's official product bezels (99.8% shape match): real screen sizes, corner radii, bezels, Dynamic Island and button positions, with frame colours sampled per finish
+- **12 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 17, iPhone 18 Pro, iPhone Duo (foldable), Pixel 10, Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
+- **Measured, Not Eyeballed** - iPhone 17, iPhone 18 Pro, iPhone Duo, iPad Pro and MacBook Pro frames are measured from Apple's official product bezels (99.8% shape match): real screen sizes, corner radii, bezels, Dynamic Island and button positions, with frame colours sampled per finish
 - **Multiple Color Variants** - Authentic device colors for each model
 - **Landscape Mode** - Rotate phones and tablets
 - **Notch/Dynamic Island Toggle** - Show or hide notches
@@ -21,7 +23,7 @@ Device mockups for React. Showcase your apps in realistic phone, tablet, and lap
 - **Custom Device Frames** - Create your own frames with `CustomMockFrame`
 - **Modular CSS** - Import only the device families you need
 - **TypeScript First** - Full type safety with discriminated unions
-- **Lightweight** - ~9.8KB ESM (~2.6KB gzipped), tree-shakeable
+- **Lightweight** - ~16.6KB ESM (~4.5KB gzipped), tree-shakeable
 
 ## Supported Devices
 
@@ -32,6 +34,7 @@ Device mockups for React. Showcase your apps in realistic phone, tablet, and lap
 | iPhone 8 Plus | black, silver, gold | Yes | - |
 | iPhone 17 | black, white, mist-blue, sage, lavender, cosmic-orange, deep-blue | Yes | Dynamic Island |
 | iPhone 18 Pro | black, silver, glacier, burgundy, gold, natural-titanium | Yes | Dynamic Island |
+| iPhone Duo | night-sky, star-white | Yes | Camera (3 fold poses) |
 | Pixel 10 | obsidian, frost, indigo, lemongrass | Yes | - |
 | Galaxy S25 | blue-black, icy-blue, navy, mint, silver-shadow, coral-red, pink-gold | Yes | - |
 | iPad Mini | black, silver | Yes | - |
@@ -93,6 +96,29 @@ export default function App() {
   <YourTabletApp />
 </MockFrame>
 ```
+
+### iPhone Duo: closed, half-open, open
+
+Apple's foldable has three poses. Each is measured from Apple's iPhone Duo product bezels: the closed outer
+display (466×678), the open inner display (951×669) and the half-open book pose, where each half is placed
+with the perspective of Apple's own render.
+
+```tsx
+<MockFrame device="iPhone Duo" color="night-sky">                  {/* closed (default) */}
+<MockFrame device="iPhone Duo" color="night-sky" pose="half-open"> {/* book pose */}
+<MockFrame device="iPhone Duo" color="star-white" pose="open">     {/* inner display */}
+```
+
+- Closed is naturally portrait and open naturally landscape (the book spread); `landscape` turns either one
+  (`landscape` on closed, `landscape={false}` on open). The half-open pose is always the book pose.
+- `width` / `height` set the screen size of the current pose; `hideNotch` hides the camera.
+- With `animated`, changing `pose` folds the device in 3D: the halves swing on the hinge, and closing it
+  brings the outer display over. It runs between the natural orientations at the default size, and is skipped
+  when the visitor prefers reduced motion. Content is remounted while it folds.
+- In the half-open pose your content is drawn once per half. The right-hand copy is `inert` and hidden from
+  screen readers, so interactive content only works on the left half. Images and videos look right across both.
+- The half turned away from the light is shaded; set the CSS variable `--duo-fold-shade` (default `0.22`) on the
+  frame to change it, or `0` to turn it off.
 
 ### Hide Notch / Dynamic Island
 
@@ -255,10 +281,10 @@ Import only the device families you need to reduce bundle size:
 Sizes below are minified (gzipped in parentheses).
 
 ```tsx
-// Full bundle - all devices (~37KB min / ~6.8KB gzip)
+// Full bundle - all devices (~49KB min / ~9.9KB gzip)
 import 'react-mockframe/styles/mockframe.css'
 
-// iPhones only (~23KB min / ~4.2KB gzip)
+// iPhones only (~35KB min / ~7.2KB gzip)
 import 'react-mockframe/styles/mockframe-iphones.css'
 
 // Android only (~5KB min / ~1.4KB gzip)
@@ -282,6 +308,7 @@ import type {
   DeviceConfig,         // Get config for a specific device
   DeviceColor,          // Get available colors for a device
   DeviceHasLandscape,   // Check if device supports landscape
+  DevicePose,           // Fold poses of a foldable ('closed' | 'half-open' | 'open')
   CustomMockFrameProps,
 } from 'react-mockframe'
 
@@ -334,11 +361,11 @@ The interactive demo website includes:
 
 ## Credits
 
-Device frame styles are adapted from [Marvel devices.css](https://github.com/marvelapp/devices.css) (MIT © 2014 Marvelapp). Newer device frames (iPhone 17, iPhone 18 Pro, Pixel 10, Galaxy S25, iPad Pro, MacBook Pro) and all React/TypeScript code are original to this project. Apple frame measurements come from Apple's [product bezels](https://developer.apple.com/design/resources/#product-bezels); no Apple artwork is included.
+Device frame styles are adapted from [Marvel devices.css](https://github.com/marvelapp/devices.css) (MIT © 2014 Marvelapp). Newer device frames (iPhone 17, iPhone 18 Pro, iPhone Duo, Pixel 10, Galaxy S25, iPad Pro, MacBook Pro) and all React/TypeScript code are original to this project. Apple frame measurements come from Apple's [product bezels](https://developer.apple.com/design/resources/#product-bezels); no Apple artwork is included.
 
 ## Author
 
-**Mohammed Banani** — [@mbdev3](https://github.com/mbdev3)
+**Mohammed Banani** — [@mbdev3](https://github.com/mbdev3) · [Matter Development](https://matterdevelopment.com/?utm_source=react-mockframe&utm_medium=readme)
 
 ## Contributing
 

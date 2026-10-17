@@ -14,6 +14,8 @@ type DeviceType<Device extends string, Colors extends readonly string[]> = {
     width?: number,
     /** Default content height in pixels */
     height?: number,
+    /** Fold poses, for foldables (the first one is the default) */
+    poses?: readonly string[],
 }
 
 /**
@@ -62,6 +64,15 @@ export const DeviceOptions = {
         hasLandscape: true,
         width: 402,
         height: 874,
+    }),
+    ['iPhone Duo']: defineDevice({
+        device: 'iphone-duo',
+        colors: ['night-sky', 'star-white'] as const,
+        hasLandscape: true,
+        // Outer display; the inner display (open / half-open) is 951x669
+        width: 466,
+        height: 678,
+        poses: ['closed', 'half-open', 'open'] as const,
     }),
     // Modern Android
     ['Pixel 10']: defineDevice({
@@ -145,6 +156,13 @@ export type DeviceColor<D extends DeviceName> = typeof DeviceOptions[D]['colors'
 export type DeviceHasLandscape<D extends DeviceName> = typeof DeviceOptions[D]['hasLandscape']
 
 /**
+ * Fold poses of a foldable device (never for other devices)
+ * @example DevicePose<'iPhone Duo'> = 'closed' | 'half-open' | 'open'
+ */
+export type DevicePose<D extends DeviceName> =
+    typeof DeviceOptions[D] extends { poses: readonly (infer P)[] } ? P : never
+
+/**
  * Internal type for generating discriminated union props
  */
 type DevicesType<R extends Record<string, DeviceType<string, readonly string[]>>> = {
@@ -155,6 +173,8 @@ type DevicesType<R extends Record<string, DeviceType<string, readonly string[]>>
         color: R[key]['colors'][number],
         /** Display in landscape orientation (only for devices that support it) */
         landscape: R[key]['hasLandscape'] extends true ? (boolean | undefined) : never
+        /** Fold pose (only for foldables); defaults to the first pose */
+        pose: R[key] extends { poses: readonly (infer P)[] } ? (P | undefined) : never
         /** Override content width in pixels */
         width?: number,
         /** Override content height in pixels */

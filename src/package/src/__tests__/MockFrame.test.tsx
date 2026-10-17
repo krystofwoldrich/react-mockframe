@@ -89,3 +89,44 @@ describe('MockFrame anatomy', () => {
     expect(container.querySelector('.dynamic-island')).toBeNull()
   })
 })
+
+describe('iPhone Duo', () => {
+  it('defaults to the closed pose at the outer display size', () => {
+    const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" />)
+    const root = container.firstChild as HTMLElement
+    expect(root).toHaveClass('mockframe', 'iphone-duo', 'night-sky', 'duo-closed')
+    expect(container.querySelector('.duo-outer .screen')).toHaveStyle({ width: '466px', height: '678px' })
+  })
+
+  it('opens to the inner display in its natural landscape orientation', () => {
+    const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
+    expect(container.querySelector('.duo-inner .screen')).toHaveStyle({ width: '951px', height: '669px' })
+    expect((container.querySelector('.duo-device') as HTMLElement).style.transform).toBe('')
+  })
+
+  it('turns the open device and counter-rotates the content for portrait', () => {
+    const { container } = render(
+      <MockFrame device="iPhone Duo" color="night-sky" pose="open" landscape={false} />
+    )
+    expect((container.querySelector('.duo-device') as HTMLElement).style.transform).toContain('rotate(-90deg)')
+    expect((container.querySelector('.duo-content') as HTMLElement).style.transform).toContain('rotate(90deg)')
+  })
+
+  it('draws the half-open pose as two halves with an inert, hidden copy', () => {
+    const { container, getAllByText } = render(
+      <MockFrame device="iPhone Duo" color="star-white" pose="half-open"><p>hello</p></MockFrame>
+    )
+    expect(container.querySelectorAll('.duo-half')).toHaveLength(2)
+    expect(getAllByText('hello')).toHaveLength(2)
+    const copy = container.querySelector('.duo-half--right .duo-content')!
+    expect(copy).toHaveAttribute('aria-hidden', 'true')
+    expect(copy).toHaveAttribute('inert')
+    expect(container.querySelector('.duo-half--left .duo-content')).not.toHaveAttribute('inert')
+    expect((container.querySelector('.duo-half--left') as HTMLElement).style.transform).toMatch(/^matrix3d\(/)
+  })
+
+  it('does not leak the pose prop to the DOM', () => {
+    const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
+    expect(container.firstChild).not.toHaveAttribute('pose')
+  })
+})

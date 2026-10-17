@@ -2012,4 +2012,432 @@
 			display: none;
 		}
 	}
+
+	/* ===========================================
+	   			iPHONE DUO
+	   Apple's foldable, measured from Apple's official iPhone Duo product
+	   bezels (1px = 1pt). Three poses: closed (outer display), half-open
+	   (book pose: each half is placed with the perspective measured from
+	   Apple's render) and open (inner display). The component sets sizes,
+	   rotation and the half-open transforms inline; this block holds the
+	   anatomy and the finishes.
+	   =========================================== */
+
+	&.iphone-duo {
+		/* Night Sky (default) */
+		/* closed: front panel rings (top-edge profile) */
+		--duo-k1: #4c5564; --duo-k2: #252d3a; --duo-k3: #121821; --duo-k4: #1a202a; --duo-k5: #333d4c; --duo-k6: #b9d1f3; --duo-k7: #a8c3ea; --duo-k8: #90aacf; --duo-k9: #778eaf; --duo-k10: #5f738e; --duo-k11: #45556c; --duo-k12: #2d3949; --duo-k13: #1e2631; --duo-k14: #151b24; --duo-k15: #10161d; --duo-k16: #030406; --duo-k17: #010102; --duo-k18: #1c2028; --duo-k19: #181b21; --duo-k20: #111318; --duo-k21: #0b0d10; --duo-k22: #040506; --duo-k23: #000000; --duo-k24: #000000;
+		--duo-strip-r: linear-gradient(to left, #495260 0.33px, #0b0f14 1.0px, #050607 1.67px, #030305 2.33px, #232c38 3.0px, #44546a 3.67px, #5b6f8a 4.33px, #8099bb 5.0px, #acc5e9 5.67px, #1e232b 6.33px, #000104 7.0px, #0f1217 7.67px, #1e232b 8.33px, #13161b 9.0px, #0e1014 9.67px, #0a0c0f 10.33px, #060709 11.0px, #030304 11.67px, #010101 12.33px, #000000 13.0px, #000000 13.67px, #000000 14.33px);
+		--duo-strip-b: linear-gradient(to top, #454e5b 0.33px, #191e25 1.0px, #111317 1.67px, #090a0d 2.33px, #7d93b3 3.0px, #8ba4c8 3.67px, #5d708c 4.33px, #3e4c61 5.0px, #2e394a 5.67px, #1a2029 6.33px, #0b0c0f 7.0px, #111318 7.67px, #1d2129 8.33px, #13161b 9.0px, #0e1014 9.67px, #090b0e 10.33px, #060708 11.0px, #020303 11.67px, #010101 12.33px, #000000 13.0px, #000000 13.67px, #000000 14.33px);
+		--duo-strip-l: linear-gradient(to right, #26303e 0.33px, #89a3c7 1.0px, #262f3c 1.67px, #020305 2.33px, #010203 3.0px, #000102 3.67px, #000102 4.33px, #000101 5.0px, #07080a 5.67px, #21252e 6.33px, #14171d 7.0px, #0f1115 7.67px, #0b0c0f 8.33px, #07080a 9.0px, #040405 9.67px, #010101 10.33px, #000000 11.0px, #000000 11.67px, #000000 12.33px, #000000 13.0px);
+		--duo-spine: linear-gradient(to right, #2b3545 0.33px, #1a2233 1.0px, #47556d 1.67px, #7e94b5 2.33px, #6b7d9a 3.0px, #404b5e 3.67px, #2c3546 4.33px, #212837 5.0px, #1d2330 5.67px, #1c232f 6.33px, #1c222e 7.0px, #1b212d 7.67px, #1c222e 8.33px, #1b222e 9.0px, #1c232f 9.67px, #1e2531 10.33px, #1e2531 11.0px, #26303f 11.67px);
+		--duo-btn-stops: #25313f 6.2%, #2e3b4d 18.8%, #324156 31.2%, #37475e 43.8%, #3d4f68 56.2%, #4b5f78 68.8%, #a1b7da 81.2%, #03070d 93.8%;
+		/* open: inner frame rings */
+		--duo-o1: #4f5b72; --duo-o2: #141b27; --duo-o3: #111826; --duo-o4: #252f42; --duo-o5: #46546e; --duo-o6: #637594; --duo-o7: #7d92b9; --duo-o8: #98afda; --duo-o9: #697b9b; --duo-o10: #232c3d; --duo-o11: #03070e; --duo-o12: #141618; --duo-o13: #252628; --duo-o14: #434345; --duo-o15: #414243; --duo-o16: #2f2f31; --duo-o17: #2a2a2c; --duo-o18: #141516;
+		--duo-o-bg: #030303;
+		--duo-hinge-slot: #1e1f20;
+		--duo-hinge-hi: #ceddf7;
+		/* half-open: the outer side walls, sampled from Apple's render */
+		--duo-wall-l: linear-gradient(to left, #080911 0%, #08090d 14%, #2c3543 29%, #415063 43%, #4e5c71 57%, #5a677d 71%, #626f86 86%, #68758d 100%);
+		--duo-wall-r: linear-gradient(to right, #05060e 0%, #030306 14%, #171d26 29%, #2a3544 43%, #39485f 57%, #65758e 71%, #50627f 86%, #475771 100%);
+		/* half-open: the half turned away from the light is darker (0 turns it off) */
+		--duo-fold-shade: 0.22;
+
+		&.star-white {
+			/* closed: front panel rings (top-edge profile) */
+			--duo-k1: #6c6d6d; --duo-k2: #616160; --duo-k3: #444442; --duo-k4: #383836; --duo-k5: #41403d; --duo-k6: #6d6a65; --duo-k7: #f8f8f7; --duo-k8: #f7f6f5; --duo-k9: #f2f2f1; --duo-k10: #edecea; --duo-k11: #e2e1df; --duo-k12: #d2d1cc; --duo-k13: #bab8b1; --duo-k14: #a09d95; --duo-k15: #8c8982; --duo-k16: #686661; --duo-k17: #3f3e3d; --duo-k18: #1b1d21; --duo-k19: #3a3f4a; --duo-k20: #25292f; --duo-k21: #1a1d21; --duo-k22: #0c0d0f; --duo-k23: #010101; --duo-k24: #000000;
+			--duo-strip-r: linear-gradient(to left, #3f3e3d 0.33px, #232220 1.0px, #33312d 1.67px, #474440 2.33px, #908d86 3.0px, #c7c4be 3.67px, #d7d5d0 4.33px, #e5e4e0 5.0px, #f1f0ee 5.67px, #746f69 6.33px, #54504c 7.0px, #333539 7.67px, #3b404b 8.33px, #262930 9.0px, #1c1f24 9.67px, #14161a 10.33px, #0d0e10 11.0px, #060708 11.67px, #010202 12.33px, #000000 13.0px, #000000 13.67px, #000000 14.33px);
+			--duo-strip-b: linear-gradient(to top, #41403f 0.33px, #292725 1.0px, #383532 1.67px, #4e4944 2.33px, #d1cfcc 3.0px, #e5e4e1 3.67px, #d4d2ce 4.33px, #b9b6af 5.0px, #96938b 5.67px, #65635e 6.33px, #464543 7.0px, #1d1f23 7.67px, #373c45 8.33px, #25282e 9.0px, #1b1e23 9.67px, #131418 10.33px, #0b0c0e 11.0px, #050506 11.67px, #010101 12.33px, #000000 13.0px, #000000 13.67px, #000000 14.33px);
+			--duo-strip-l: linear-gradient(to right, #4e4d4b 0.33px, #9a9993 1.0px, #55534f 1.67px, #d4d2ce 2.33px, #e8e7e5 3.0px, #ebeae8 3.67px, #ececea 4.33px, #edecea 5.0px, #2d2c2d 5.67px, #3f4550 6.33px, #282b32 7.0px, #1e2126 7.67px, #16181c 8.33px, #0e0f11 9.0px, #070809 9.67px, #020203 10.33px, #000000 11.0px, #000000 11.67px, #000000 12.33px, #000000 13.0px);
+			--duo-spine: linear-gradient(to right, #615f5e 0.33px, #53514c 1.0px, #7f7c75 1.67px, #c5c2bb 2.33px, #97948d 3.0px, #636159 3.67px, #5a5750 4.33px, #5a574f 5.0px, #5f5b53 5.67px, #6e6b62 6.33px, #817e74 7.0px, #969389 7.67px, #a9a69d 8.33px, #b7b4ab 9.0px, #bfbcb4 9.67px, #bebbb4 10.33px, #b1aea7 11.0px, #82817c 11.67px);
+			--duo-btn-stops: #83817c 6.2%, #9d998f 18.8%, #a5a298 31.2%, #adaaa0 43.8%, #b6b3aa 56.2%, #cfcdc6 68.8%, #ffffff 81.2%, #444038 93.8%;
+			/* open: inner frame rings */
+			--duo-o1: #74726e; --duo-o2: #4e4c46; --duo-o3: #615f59; --duo-o4: #82807a; --duo-o5: #b3b1aa; --duo-o6: #d6d4ce; --duo-o7: #eae8e3; --duo-o8: #f5f4f0; --duo-o9: #dbd9d3; --duo-o10: #837f77; --duo-o11: #23211c; --duo-o12: #1c1d1e; --duo-o13: #363738; --duo-o14: #4c4d4f; --duo-o15: #48494a; --duo-o16: #343536; --duo-o17: #2f3031; --duo-o18: #171819;
+			--duo-o-bg: #040404;
+			--duo-hinge-slot: #212223;
+			--duo-hinge-hi: #dbdbdb;
+			--duo-wall-l: linear-gradient(to left, #26241f 0%, #a3a19a 14%, #eeece6 29%, #f6f4ee 43%, #f8f7f1 57%, #faf8f3 71%, #fbf9f4 86%, #fcfbf6 100%);
+			--duo-wall-r: linear-gradient(to right, #090806 0%, #0e0d09 14%, #97948d 29%, #c2bfb7 43%, #d3d1c9 57%, #dfdcd5 71%, #cbc9c2 86%, #ece9e3 100%);
+		}
+
+		.duo-device {
+			position: absolute;
+			top: 0;
+			left: 0;
+			transform-origin: 0 0;
+		}
+
+		.screen {
+			position: absolute;
+			z-index: 3;
+			overflow: hidden;
+			box-shadow: none;
+			background: #fff;
+		}
+
+		.duo-content {
+			position: absolute;
+			top: 0;
+			left: 0;
+			transform-origin: 0 0;
+		}
+
+		.duo-camera {
+			position: absolute;
+			z-index: 5;
+			border-radius: 50%;
+			background: radial-gradient(circle, #0c0c0e 0, #0e0d14 1px, #1d1d46 2px, #15191f 3px, #212129 4px, #14131a 5px, #13121b 9.5px, #010101 10.5px);
+		}
+
+		/* Side button on the right edge, volume buttons on the top edge */
+		.duo-btn {
+			position: absolute;
+		}
+
+		.duo-btn--side {
+			top: 202.33px;
+			right: -2.67px;
+			width: 2.67px;
+			height: 112.67px;
+			border-radius: 0 1.33px 1.33px 0;
+			background: linear-gradient(to right, var(--duo-btn-stops));
+		}
+
+		.duo-btn--vol-up, .duo-btn--vol-down {
+			top: -2.67px;
+			width: 65.67px;
+			height: 2.67px;
+			border-radius: 1.33px 1.33px 0 0;
+			background: linear-gradient(to top, var(--duo-btn-stops));
+		}
+
+		.duo-btn--vol-up { right: 207px; }
+		.duo-btn--vol-down { right: 126px; }
+
+		/* ---------- Closed: outer display ---------- */
+
+		/* The other half's spine, peeking out on the hinge side */
+		.duo-spine {
+			position: absolute;
+			top: 6px;
+			bottom: 6px;
+			left: 0;
+			width: 16px;
+			border-radius: 12px 0 0 12px;
+			background: var(--duo-spine);
+		}
+
+		.duo-panel {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 11.67px;
+			border-radius: 4px 73.97px 73.97px 4px;
+			background: #000;
+			box-shadow:
+				inset 0 0 0 0.333px var(--duo-k1),
+				inset 0 0 0 0.667px var(--duo-k2),
+				inset 0 0 0 1.0px var(--duo-k3),
+				inset 0 0 0 1.333px var(--duo-k4),
+				inset 0 0 0 1.667px var(--duo-k5),
+				inset 0 0 0 2.0px var(--duo-k6),
+				inset 0 0 0 2.333px var(--duo-k7),
+				inset 0 0 0 2.667px var(--duo-k8),
+				inset 0 0 0 3.0px var(--duo-k9),
+				inset 0 0 0 3.333px var(--duo-k10),
+				inset 0 0 0 4.0px var(--duo-k11),
+				inset 0 0 0 4.667px var(--duo-k12),
+				inset 0 0 0 5.333px var(--duo-k13),
+				inset 0 0 0 6.0px var(--duo-k14),
+				inset 0 0 0 6.333px var(--duo-k15),
+				inset 0 0 0 7.0px var(--duo-k16),
+				inset 0 0 0 7.667px var(--duo-k17),
+				inset 0 0 0 8.333px var(--duo-k18),
+				inset 0 0 0 9.0px var(--duo-k19),
+				inset 0 0 0 9.667px var(--duo-k20),
+				inset 0 0 0 10.667px var(--duo-k21),
+				inset 0 0 0 12.0px var(--duo-k22),
+				inset 0 0 0 13.667px var(--duo-k23),
+				inset 0 0 0 15.667px var(--duo-k24);
+
+			/* Apple's band differs per edge: the rings follow the top edge and
+			   these strips carry the left, right and bottom edges */
+			&::before, &::after {
+				content: '';
+				position: absolute;
+			}
+
+			&::before {
+				top: 6px;
+				bottom: 6px;
+				left: 0;
+				width: 13.33px;
+				background: var(--duo-strip-l);
+				-webkit-mask-image: linear-gradient(to bottom, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+				mask-image: linear-gradient(to bottom, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+			}
+
+			&::after {
+				top: 70px;
+				bottom: 70px;
+				right: 0;
+				width: 14.67px;
+				background: var(--duo-strip-r);
+				-webkit-mask-image: linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+				mask-image: linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+			}
+		}
+
+		.duo-strip-b {
+			position: absolute;
+			right: 70px;
+			bottom: 0;
+			left: 6px;
+			height: 14.67px;
+			background: var(--duo-strip-b);
+			-webkit-mask-image: linear-gradient(to right, transparent, #000 6px, #000 calc(100% - 24px), transparent);
+			mask-image: linear-gradient(to right, transparent, #000 6px, #000 calc(100% - 24px), transparent);
+		}
+
+		.duo-outer {
+			.screen {
+				top: 16px;
+				left: 25.67px;
+				border-radius: 7.97px 58.04px 58.04px 7.97px;
+			}
+
+			.duo-camera {
+				top: 45.83px;
+				right: 45.67px;
+				width: 36px;
+				height: 36px;
+			}
+		}
+
+		/* ---------- Open: inner display ---------- */
+
+		.duo-inner {
+			.duo-frame {
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				border-radius: 75.11px;
+				background: var(--duo-o-bg);
+				box-shadow:
+					inset 0 0 0 0.667px var(--duo-o1),
+					inset 0 0 0 1.333px var(--duo-o2),
+					inset 0 0 0 1.667px var(--duo-o3),
+					inset 0 0 0 2.0px var(--duo-o4),
+					inset 0 0 0 2.333px var(--duo-o5),
+					inset 0 0 0 2.667px var(--duo-o6),
+					inset 0 0 0 3.0px var(--duo-o7),
+					inset 0 0 0 3.333px var(--duo-o8),
+					inset 0 0 0 3.667px var(--duo-o9),
+					inset 0 0 0 4.0px var(--duo-o10),
+					inset 0 0 0 4.333px var(--duo-o11),
+					inset 0 0 0 4.667px var(--duo-o12),
+					inset 0 0 0 5.0px var(--duo-o13),
+					inset 0 0 0 6.0px var(--duo-o14),
+					inset 0 0 0 7.0px var(--duo-o15),
+					inset 0 0 0 16.667px var(--duo-o16),
+					inset 0 0 0 17.333px var(--duo-o17),
+					inset 0 0 0 18.0px var(--duo-o18);
+				/* V-notches where the two halves' rims meet at the hinge */
+				-webkit-mask-image:
+					conic-gradient(from -49deg at 50% 4.33px, transparent 98deg, #000 0),
+					conic-gradient(from 131deg at 50% calc(100% - 4.33px), transparent 98deg, #000 0);
+				-webkit-mask-composite: source-in;
+				mask-image:
+					conic-gradient(from -49deg at 50% 4.33px, transparent 98deg, #000 0),
+					conic-gradient(from 131deg at 50% calc(100% - 4.33px), transparent 98deg, #000 0);
+				mask-composite: intersect;
+			}
+
+			.screen {
+				top: 20.67px;
+				left: 20.67px;
+				border-radius: 53.49px;
+			}
+
+			.duo-camera {
+				top: 47.21px;
+				right: 278.2px;
+				width: 29.5px;
+				height: 29.5px;
+			}
+
+			.duo-btn--vol-up { right: 206.67px; }
+			.duo-btn--vol-down { right: 125.67px; }
+		}
+
+		/* Hinge cover slots in the bezel above and below the fold */
+		.duo-hinge {
+			position: absolute;
+			left: 50%;
+			width: 68px;
+			height: 2.67px;
+			margin-left: -34px;
+			border-radius: 1.33px;
+			background: var(--duo-hinge-slot);
+			z-index: 1;
+
+			&::before {
+				content: '';
+				position: absolute;
+				left: 50%;
+				width: 1.33px;
+				height: 2.67px;
+				margin-left: -0.67px;
+				background: var(--duo-hinge-hi);
+			}
+		}
+
+		.duo-hinge--top {
+			top: 6.33px;
+
+			&::before { top: -2.67px; }
+		}
+
+		.duo-hinge--bottom {
+			bottom: 6.33px;
+
+			&::before { bottom: -2.67px; }
+		}
+
+		/* ---------- Half-open: two halves placed in perspective ---------- */
+
+		.duo-half {
+			position: absolute;
+			top: 0;
+			left: 0;
+			transform-origin: 0 0;
+
+			> .duo-device {
+				position: relative;
+			}
+		}
+
+		/* Side walls on the outer edges, seen in perspective: the face outline
+		   shifted outwards behind the face, so the wall follows the corners */
+		.duo-wall {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 50%;
+			z-index: -1;
+		}
+
+		.duo-wall--left {
+			left: -7.1px;
+			border-radius: 75.11px 0 0 75.11px;
+			background: var(--duo-wall-l) left / 7.1px 100% no-repeat, #080911;
+		}
+
+		.duo-wall--right {
+			right: -7.1px;
+			border-radius: 0 75.11px 75.11px 0;
+			background: var(--duo-wall-r) right / 7.1px 100% no-repeat, #05060e;
+		}
+
+		/* Lighting across the fold: the left half is turned away from the light
+		   and the right half darkens towards the crease */
+		.duo-shade {
+			position: absolute;
+			top: 20.67px;
+			right: 20.67px;
+			bottom: 20.67px;
+			left: 20.67px;
+			border-radius: 53.49px;
+			z-index: 4;
+			pointer-events: none;
+		}
+
+		.duo-shade--left {
+			background: rgba(0, 0, 0, var(--duo-fold-shade));
+		}
+
+		.duo-shade--right {
+			background: linear-gradient(to right, transparent 50%, rgba(0, 0, 0, calc(var(--duo-fold-shade) * 0.8)) 50%, transparent calc(50% + 90px));
+		}
+
+		.duo-half--left {
+			clip-path: inset(-12px calc(50% - 0.5px) -12px -12px);
+		}
+
+		.duo-half--right {
+			clip-path: inset(-12px -12px -12px 50%);
+		}
+
+
+		/* ---------- Fold animation: two 3D leaves hinged in the middle ---------- */
+
+		.duo-scene {
+			position: absolute;
+			transform-style: preserve-3d;
+			perspective-origin: 50% 50%;
+
+			.duo-shade, .duo-wall {
+				transition: opacity 900ms ease;
+			}
+		}
+
+		/* Flat (open): no fold shading and no side walls */
+		.duo-scene--flat {
+			.duo-shade, .duo-wall {
+				opacity: 0;
+			}
+		}
+
+		.duo-leaf {
+			position: absolute;
+			top: 0;
+			width: 50%;
+			height: 100%;
+			transform-style: preserve-3d;
+		}
+
+		.duo-leaf--left {
+			left: 0;
+			transform-origin: 100% 50%;
+		}
+
+		.duo-leaf--right {
+			left: 50%;
+			transform-origin: 0 50%;
+		}
+
+		.duo-face {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			-webkit-backface-visibility: hidden;
+			backface-visibility: hidden;
+
+			> .duo-device {
+				top: 0;
+			}
+		}
+
+		.duo-face--front {
+			clip-path: inset(-12px 0 -12px -12px);
+		}
+
+		.duo-face--right {
+			clip-path: inset(-12px -12px -12px 0);
+
+			> .duo-device { left: -100%; }
+		}
+
+		/* The left leaf's back is the outer display, seen once the leaf has swung over */
+		.duo-face--back {
+			transform: rotateY(180deg);
+
+			> .duo-device { left: -11.67px; }
+		}
+	}
 }

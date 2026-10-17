@@ -26,15 +26,18 @@ import type {
   DeviceConfig,
   DeviceColor,
   DeviceHasLandscape,
+  DevicePose,
 } from './DeviceOptions'
 import { DeviceOptions, DeviceNames } from './DeviceOptions'
+import { DuoFrame } from './IPhoneDuo'
+import type { DuoPose } from './IPhoneDuo'
 
 /* =============================================================================
    RE-EXPORTS
    ============================================================================= */
 
 export { DeviceOptions, DeviceNames }
-export type { MockFrameProps, DeviceName, DeviceConfig, DeviceColor, DeviceHasLandscape }
+export type { MockFrameProps, DeviceName, DeviceConfig, DeviceColor, DeviceHasLandscape, DevicePose }
 
 /* =============================================================================
    CONSTANTS
@@ -407,11 +410,12 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   } = props
 
   // Extract device-specific props that shouldn't be passed to DOM
-  const divProps = omit(restProps, ['landscape', 'color'])
+  const divProps = omit(restProps, ['landscape', 'color', 'pose'])
 
   // Type-safe extraction of optional props
   const color = 'color' in props ? props.color : undefined
   const landscape = 'landscape' in props ? props.landscape : undefined
+  const pose = 'pose' in props ? (props.pose as DuoPose | undefined) : undefined
 
   // `device` can come from untyped data at runtime, so the lookup may miss
   const config: { device: string, hasLandscape: boolean } | undefined = DeviceOptions[device]
@@ -428,6 +432,26 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   if (!config) {
     console.error(`MockFrame: unknown device "${String(device)}". Expected one of: ${DeviceNames.join(', ')}`)
     return null
+  }
+
+  // The foldable has its own renderer: three poses, two displays
+  if (config.device === 'iphone-duo') {
+    return (
+      <DuoFrame
+        ref={ref}
+        pose={pose}
+        landscape={landscape}
+        width={width}
+        height={height}
+        hideNotch={hideNotch}
+        animated={animated}
+        className={cx('mockframe', config.device, color, userClassName)}
+        style={{ transform: style.transform, transition: style.transition, ...userStyle }}
+        divProps={divProps}
+      >
+        {children}
+      </DuoFrame>
+    )
   }
 
   // Build CSS class string for device styling
