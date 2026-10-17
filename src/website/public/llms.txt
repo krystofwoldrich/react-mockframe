@@ -39,7 +39,7 @@ import 'react-mockframe/styles/mockframe.css'
 - Hide/show notch and Dynamic Island
 - Custom zoom and dimensions
 - TypeScript support
-- Lightweight (~17KB ESM, ~4.5KB gzipped)
+- Lightweight (~21KB ESM, ~5.7KB gzipped)
 
 ## Documentation
 https://mockframe.matterdevelopment.com

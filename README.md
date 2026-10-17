@@ -23,7 +23,7 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 - **Custom Device Frames** - Create your own frames with `CustomMockFrame`
 - **Modular CSS** - Import only the device families you need
 - **TypeScript First** - Full type safety with discriminated unions
-- **Lightweight** - ~16.6KB ESM (~4.5KB gzipped), tree-shakeable
+- **Lightweight** - ~21KB ESM (~5.7KB gzipped), tree-shakeable
 
 ## Supported Devices
 
@@ -281,10 +281,10 @@ Import only the device families you need to reduce bundle size:
 Sizes below are minified (gzipped in parentheses).
 
 ```tsx
-// Full bundle - all devices (~49KB min / ~9.9KB gzip)
+// Full bundle - all devices (~50KB min / ~10KB gzip)
 import 'react-mockframe/styles/mockframe.css'
 
-// iPhones only (~35KB min / ~7.2KB gzip)
+// iPhones only (~36KB min / ~7.4KB gzip)
 import 'react-mockframe/styles/mockframe-iphones.css'
 
 // Android only (~5KB min / ~1.4KB gzip)
