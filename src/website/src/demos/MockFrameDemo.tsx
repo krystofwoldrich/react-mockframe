@@ -37,6 +37,11 @@ const colorMap: Record<string, string> = {
   'porcelain': '#e8e5e1',
   'mint': '#afdbc5',
   'rose': '#e8c4c4',
+  // Pixel 9 Pro / 10 Pro / Pro Fold colors (Google Store swatches)
+  'hazel': '#949997',
+  'rose-quartz': '#f4ddec',
+  'moonstone': '#7d8291',
+  'jade': '#d9e9ca',
   // Galaxy S25 colors
   'phantom-black': '#1e1e1e',
   'icy-blue': '#c5d5e0',
@@ -353,10 +358,18 @@ const duoPoses: { value: DuoPose, label: string, landscape: boolean, size: [numb
   { value: 'open', label: 'Open', landscape: true, size: [992, 710] },
 ]
 
+// Pixel Pro Fold poses and their screen sizes (closed is the device's default size)
+const pixelFolds: DeviceName[] = ['Pixel 10 Pro Fold', 'Pixel 9 Pro Fold']
+const pixelFoldPoses: { value: DuoPose, label: string }[] = [
+  { value: 'closed', label: 'Closed' },
+  { value: 'open', label: 'Open' },
+]
+const PIXEL_FOLD_INNER: [number, number] = [852, 883]
+
 // Device picker order: newest and most-used first, legacy models last
 const deviceOrder: DeviceName[] = [
   'iPhone 18 Pro', 'iPhone Duo', 'MacBook Pro', 'iPad Pro', 'iPhone 17',
-  'Pixel 10', 'Galaxy S25', 'iPad Mini', 'MacBook Pro 2020', 'iPhone X', 'iPhone 8', 'iPhone 8 Plus',
+  'Pixel 10', 'Pixel 10 Pro', 'Pixel 10 Pro Fold', 'Pixel 9 Pro', 'Pixel 9 Pro Fold', 'Galaxy S25', 'iPad Mini', 'MacBook Pro 2020', 'iPhone X', 'iPhone 8', 'iPhone 8 Plus',
 ]
 // Any device added to the library later still shows up, at the end
 const orderedDevices = [...deviceOrder, ...DeviceNames.filter((d) => !deviceOrder.includes(d))]
@@ -376,6 +389,8 @@ export default function MockFrameDemo() {
   const [pose, setPose] = useState<DuoPose>('closed')
   const deviceInfo = DeviceOptions[device]
   const isDuo = device === 'iPhone Duo'
+  const isPixelFold = pixelFolds.includes(device)
+  const pixelFoldOpen = isPixelFold && pose === 'open'
   const duoPose = duoPoses.find((p) => p.value === pose)!
   const colors = deviceInfo.colors.filter((c) => !legacyColors[device]?.includes(c))
   const [color, setColor] = useState(colors[0])
@@ -441,8 +456,9 @@ export default function MockFrameDemo() {
     }
 
     // Get device dimensions (including frame chrome - roughly 20-30% extra)
-    const deviceWidth = landscape ? (deviceInfo.height || 812) : (deviceInfo.width || 375)
-    const deviceHeight = landscape ? (deviceInfo.width || 375) : (deviceInfo.height || 812)
+    const [screenWidth, screenHeight] = pixelFoldOpen ? PIXEL_FOLD_INNER : [deviceInfo.width || 375, deviceInfo.height || 812]
+    const deviceWidth = landscape ? screenHeight : screenWidth
+    const deviceHeight = landscape ? screenWidth : screenHeight
 
     // Device frames add significant chrome, estimate ~1.3x for phones, ~1.15x for laptops
     const isLaptop = device.toLowerCase().includes('macbook')
@@ -460,7 +476,7 @@ export default function MockFrameDemo() {
 
     // Clamp between 0.25 and 1.5
     return Math.max(0.25, Math.min(1.5, optimalZoom))
-  }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose])
+  }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose, pixelFoldOpen])
 
   // Update auto zoom when container or device changes
   useEffect(() => {
@@ -500,8 +516,9 @@ export default function MockFrameDemo() {
       if (pose !== 'half-open' && landscape !== duoPose.landscape) {
         props.push(landscape ? 'landscape' : 'landscape={false}')
       }
-    } else if (deviceInfo.hasLandscape && landscape) {
-      props.push('landscape')
+    } else {
+      if (pixelFoldOpen) props.push('pose="open"')
+      if (deviceInfo.hasLandscape && landscape) props.push('landscape')
     }
     if (deviceHasNotch && hideNotch) {
       props.push('hideNotch')
@@ -511,7 +528,7 @@ export default function MockFrameDemo() {
 >
   <YourAppContent />
 </MockFrame>`
-  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose])
+  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose, pixelFoldOpen])
 
   const handleCopy = async () => {
     try {
@@ -707,6 +724,7 @@ export default function MockFrameDemo() {
                   setPose('closed')
                   setLandscape(false)
                 }
+                if (pixelFolds.includes(newDevice)) setPose('closed')
                 const newColors = DeviceOptions[newDevice].colors
                 setColor(newColors[0])
               }}
@@ -716,7 +734,11 @@ export default function MockFrameDemo() {
               className="flex items-center gap-3 mt-3 text-xs"
               style={{ color: 'var(--color-text-tertiary)' }}
             >
-              <span>{isDuo && pose !== 'closed' ? '951 × 669' : `${deviceInfo.width} × ${deviceInfo.height}`}</span>
+              <span>
+                {isDuo && pose !== 'closed' ? '951 × 669'
+                  : pixelFoldOpen ? PIXEL_FOLD_INNER.join(' × ')
+                  : `${deviceInfo.width} × ${deviceInfo.height}`}
+              </span>
               {deviceInfo.hasLandscape && (
                 <span
                   className="px-2 py-0.5 rounded-full"
@@ -783,6 +805,34 @@ export default function MockFrameDemo() {
                       setPose(opt.value)
                       setLandscape(opt.landscape)
                     }}
+                    className="flex-1 px-3 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: pose === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
+                      color: pose === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
+                      border: `1px solid ${pose === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fold pose (Pixel Pro Fold) */}
+          {isPixelFold && (
+            <div className="glass-card p-5">
+              <label
+                className="block text-sm font-medium mb-3"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                Fold
+              </label>
+              <div className="flex gap-2">
+                {pixelFoldPoses.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setPose(opt.value)}
                     className="flex-1 px-3 py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
                       background: pose === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
@@ -1320,7 +1370,7 @@ export default function MockFrameDemo() {
                   device={device}
                   {...(colors.length > 0 ? { color } : {})}
                   landscape={deviceInfo.hasLandscape ? landscape : undefined}
-                  {...(isDuo ? { pose } : {})}
+                  {...(isDuo || isPixelFold ? { pose } : {})}
                   zoom={effectiveZoom}
                   animated
                   hideNotch={hideNotch}
@@ -1349,8 +1399,8 @@ export default function MockFrameDemo() {
                     <MockAppScreen
                       device={isDuo ? 'MacBook' : device} // the Duo shows one wallpaper in every pose, so a fold reads as one screen
                       landscape={!isDuo && deviceInfo.hasLandscape && landscape}
-                      deviceWidth={deviceInfo.width}
-                      deviceHeight={deviceInfo.height}
+                      deviceWidth={pixelFoldOpen ? PIXEL_FOLD_INNER[0] : deviceInfo.width}
+                      deviceHeight={pixelFoldOpen ? PIXEL_FOLD_INNER[1] : deviceInfo.height}
                     />
                   )}
                 </MockFrame>

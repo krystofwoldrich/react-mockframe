@@ -82,20 +82,28 @@ type Vec = [x: number, y: number]
 /** How far a cut-out reaches past the element edges, in px (enough for a frame scaled down to 1/8) */
 const BLEED = 8
 
+const draw = (x: number, y: number) => `${x.toFixed(2)},${y.toFixed(2)}`
+
+/**
+ * Close a corner curve (from the left edge to the top edge) into a cut-out that
+ * reaches `BLEED` px past the element edges. If it stopped exactly on the edges,
+ * the anti-aliased edge pixels of the mask rect would only be partly covered, and
+ * a faint line would show along the edges outside the curve.
+ */
+function cutOut(points: Vec[]) {
+  const first = points[0]!, last = points[points.length - 1]!
+  const curve = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${draw(...p)}`).join(' ')
+  return `${curve} L ${draw(last[0], -BLEED)} L ${draw(-BLEED, -BLEED)} L ${draw(-BLEED, first[1])} Z`
+}
+
 /**
  * One corner's cut-out, hugging the outer corner at (0,0). By default this is the
  * screen corner itself. For the body layers, `at` is where the screen corner sits
  * and `out` moves the curve outward along its normals (an offset curve), so the
  * layer stays the same distance from the screen all around the corner.
- *
- * The cut-out reaches `BLEED` px past the element edges. If it stopped exactly on
- * the edges, the anti-aliased edge pixels of the mask rect would only be partly
- * covered, and a faint line would show along the edges outside the curve.
  */
 function nubPath({ size, n }: ScreenCorner, at: Vec = [0, 0], out: Vec = [0, 0]) {
-  const draw = (x: number, y: number) => `${x.toFixed(2)},${y.toFixed(2)}`
-  let d = ''
-  let first: Vec = [0, 0], last: Vec = [0, 0]
+  const points: Vec[] = []
   for (let i = 0; i <= SAMPLES; i++) {
     const t = (i / SAMPLES) * (Math.PI / 2)
     const cos = Math.cos(t), sin = Math.sin(t)
@@ -104,27 +112,44 @@ function nubPath({ size, n }: ScreenCorner, at: Vec = [0, 0], out: Vec = [0, 0])
     // Outward normal of |x|^n + |y|^n = 1 at this point
     const nx = cos ** (2 * (n - 1) / n), ny = sin ** (2 * (n - 1) / n)
     const len = Math.hypot(nx, ny)
-    last = [at[0] + x - (nx / len) * out[0], at[1] + y - (ny / len) * out[1]]
-    if (i === 0) first = last
-    d += `${i === 0 ? 'M' : 'L'} ${draw(...last)} `
+    points.push([at[0] + x - (nx / len) * out[0], at[1] + y - (ny / len) * out[1]])
   }
-  return `${d}L ${draw(last[0], -BLEED)} L ${draw(-BLEED, -BLEED)} L ${draw(-BLEED, first[1])} Z`
+  return cutOut(points)
 }
 
+/** Cut-out of a circular corner of `radius`, `depth` px inside the edges (like an inset box-shadow) */
+function circleNubPath(radius: number, depth: number) {
+  const c = Math.max(radius, depth), r = c - depth
+  const points: Vec[] = []
+  for (let i = 0; i <= SAMPLES; i++) {
+    const t = (i / SAMPLES) * (Math.PI / 2)
+    points.push([c - r * Math.cos(t), c - r * Math.sin(t)])
+  }
+  return cutOut(points)
+}
+
+export type CornerPaths = Record<keyof ScreenShape, string>
+
 /**
- * The mask as an SVG that fills the masked element. Each nub sits at its own corner
- * (a nested <svg> moves the origin there) and is mirrored to point into the element,
- * so the corners keep their size at any element size.
+ * Where each corner's cut-out goes: a nested <svg> moves the origin to the corner
+ * and the cut-out is mirrored to point into the element, so the corners keep
+ * their size at any element size.
  */
-export function screenMaskSvg(shape: ScreenShape) {
-  const nub = (c: ScreenCorner, x: string, y: string, scale: string) =>
-    `<svg x='${x}' y='${y}' overflow='visible'><path d='${nubPath(c)}' transform='scale(${scale})'/></svg>`
-  const corners =
-    nub(shape.topLeft, '0', '0', '1 1') +
-    nub(shape.topRight, '100%', '0', '-1 1') +
-    nub(shape.bottomRight, '100%', '100%', '-1 -1') +
-    nub(shape.bottomLeft, '0', '100%', '1 -1')
-  // A full rectangle with the four corner nubs cut out via an inner luminance mask
+export const CORNERS: readonly { key: keyof ScreenShape, x: string, y: string, scale: string }[] = [
+  { key: 'topLeft', x: '0', y: '0', scale: '1 1' },
+  { key: 'topRight', x: '100%', y: '0', scale: '-1 1' },
+  { key: 'bottomRight', x: '100%', y: '100%', scale: '-1 -1' },
+  { key: 'bottomLeft', x: '0', y: '100%', scale: '1 -1' },
+]
+
+/** A mask as an SVG that fills the masked element: a full rect with the given corners cut out */
+function cornerMaskSvg(paths: Partial<CornerPaths>) {
+  const corners = CORNERS
+    .filter(({ key }) => paths[key])
+    .map(({ key, x, y, scale }) =>
+      `<svg x='${x}' y='${y}' overflow='visible'><path d='${paths[key]}' transform='scale(${scale})'/></svg>`)
+    .join('')
+  // A full rectangle with the corner nubs cut out via an inner luminance mask
   return (
     `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'>` +
     `<mask id='cut'><rect width='100%' height='100%' fill='white'/><g fill='black'>${corners}</g></mask>` +
@@ -133,19 +158,36 @@ export function screenMaskSvg(shape: ScreenShape) {
   )
 }
 
+/** The screen mask: the four screen corners cut out of the element */
+export function screenMaskSvg(shape: ScreenShape) {
+  return cornerMaskSvg({
+    topLeft: nubPath(shape.topLeft),
+    topRight: nubPath(shape.topRight),
+    bottomRight: nubPath(shape.bottomRight),
+    bottomLeft: nubPath(shape.bottomLeft),
+  })
+}
+
 /**
  * Body corners for the band frames. Apple draws the outer body as the screen's
- * superellipse moved outward by the glass border (within 0.2 pt; 0.4 pt on the
- * Pro Max), so every body layer is an offset curve of the screen corner. Then the
- * black border keeps one width around the corner, as on Apple's bezels.
+ * superellipse moved outward by the glass border (within 0.2 pt on the iPhones
+ * and the iPhone Duo, 0.35 pt on the iPad Pro, 0.4 pt on the Pro Max), so every
+ * body layer is an offset curve of the screen corner. Then the black border keeps
+ * one width around the corner, as on Apple's bezels.
  */
 export type FrameBand = {
-  /** Glass border around the screen in portrait, as the CSS `padding`: [top and bottom, left and right] */
-  padding: Vec
-  /** Inner edge of each band ring (`--mf-b1` … `--mf-b12`), measured from the body edge */
+  /** Glass border around the screen in portrait, as the CSS `padding` shorthand (1, 2 or 4 values) */
+  padding: readonly number[]
+  /** Inner edge of each band ring, measured from the body edge */
   rings: readonly number[]
+  /** Color variable of the rings, numbered from 1 */
+  ringColor?: string
+  /** Body color under the rings */
+  background?: string
   /** Glass glow under the band (`--mf-glass`): spread and blur of the inset shadow */
   glass?: { spread: number, blur: number }
+  /** Corners that stay circular (radius in px), instead of following the screen */
+  circles?: Partial<Record<keyof ScreenShape, number>>
 }
 
 // The values match the `padding` and the inset `box-shadow` rings in mockframe.css
@@ -167,36 +209,69 @@ export const FRAME_BANDS: Partial<Record<DeviceName, FrameBand>> = {
     padding: [20.41, 20.49],
     rings: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.25, 6.25, 7.25],
   },
+  'iPad Pro': { padding: [22.33], rings: [0.5, 1, 1.75, 2.5], glass: { spread: 3, blur: 1 } },
 }
 
-export type CornerPaths = Record<keyof ScreenShape, string>
+/** iPhone Duo bodies, matching `.duo-panel` (closed) and `.duo-frame` (open) in mockframe.css */
+export const DUO_BANDS = {
+  /** Front panel of the closed device. The hinge-side corners stay small circles. */
+  outer: {
+    padding: [16, 16, 16, 14],
+    rings: [
+      0.333, 0.667, 1, 1.333, 1.667, 2, 2.333, 2.667, 3, 3.333, 4, 4.667,
+      5.333, 6, 6.333, 7, 7.667, 8.333, 9, 9.667, 10.667, 12, 13.667, 15.667,
+    ],
+    ringColor: '--duo-k',
+    circles: { topLeft: 4, bottomLeft: 4 },
+  } satisfies FrameBand,
+  /** Frame of the open device */
+  inner: {
+    padding: [20.67],
+    rings: [0.667, 1.333, 1.667, 2, 2.333, 2.667, 3, 3.333, 3.667, 4, 4.333, 4.667, 5, 6, 7, 16.667, 17.333, 18],
+    ringColor: '--duo-o',
+    background: 'var(--duo-o-bg)',
+  } satisfies FrameBand,
+}
+
+export type Sides = { top: number, right: number, bottom: number, left: number }
+
+/** Expand a CSS `padding` shorthand; in landscape the device is turned 90deg counter-clockwise */
+export function paddingSides(padding: readonly number[], landscape?: boolean): Sides {
+  const [top = 0, right = top, bottom = top, left = right] = padding
+  return landscape
+    ? { top: right, right: bottom, bottom: left, left: top }
+    : { top, right, bottom, left }
+}
 
 /**
  * Corner cut-outs of the body layer `depth` px inside the body edge, each in its
- * own corner's coordinates (like the screen mask). `padding` is [x, y], the glass
- * border between the body edge and the screen edges.
+ * own corner's coordinates (like the screen mask). `sides` is the glass border
+ * between the body edges and the screen edges.
  */
-export function bodyCornerPaths(shape: ScreenShape, padding: Vec, depth: number): CornerPaths {
-  const out: Vec = [padding[0] - depth, padding[1] - depth]
-  const path = (c: ScreenCorner) => nubPath(c, padding, out)
+export function bodyCornerPaths(
+  shape: ScreenShape, sides: Sides, depth: number, circles: FrameBand['circles'] = {},
+): CornerPaths {
+  const path = (key: keyof ScreenShape, padding: Vec) => {
+    const radius = circles[key]
+    return radius !== undefined
+      ? circleNubPath(radius, depth)
+      : nubPath(shape[key], padding, [padding[0] - depth, padding[1] - depth])
+  }
   return {
-    topLeft: path(shape.topLeft),
-    topRight: path(shape.topRight),
-    bottomRight: path(shape.bottomRight),
-    bottomLeft: path(shape.bottomLeft),
+    topLeft: path('topLeft', [sides.left, sides.top]),
+    topRight: path('topRight', [sides.right, sides.top]),
+    bottomRight: path('bottomRight', [sides.right, sides.bottom]),
+    bottomLeft: path('bottomLeft', [sides.left, sides.bottom]),
   }
 }
 
-const styleCache = new Map<ScreenShape, React.CSSProperties>()
+const styleCache = new Map<string, React.CSSProperties>()
 
-/**
- * Inline style that gives `.screen` its superellipse corners. The circular
- * `border-radius` from the CSS is removed, because it would cut the corners too.
- */
-export function screenShapeStyle(shape: ScreenShape): React.CSSProperties {
-  let style = styleCache.get(shape)
+/** Inline style that masks an element with `svg`, without the CSS `border-radius` (it would cut the corners too) */
+function maskStyle(svg: string): React.CSSProperties {
+  let style = styleCache.get(svg)
   if (!style) {
-    const mask = `url("data:image/svg+xml,${encodeURIComponent(screenMaskSvg(shape))}")`
+    const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
     style = {
       borderRadius: 0,
       maskImage: mask,
@@ -206,7 +281,27 @@ export function screenShapeStyle(shape: ScreenShape): React.CSSProperties {
       WebkitMaskSize: '100% 100%',
       WebkitMaskRepeat: 'no-repeat',
     }
-    styleCache.set(shape, style)
+    styleCache.set(svg, style)
   }
   return style
+}
+
+const screenStyles = new WeakMap<ScreenShape, React.CSSProperties>()
+
+/** Inline style that gives `.screen` its superellipse corners */
+export function screenShapeStyle(shape: ScreenShape): React.CSSProperties {
+  let style = screenStyles.get(shape)
+  if (!style) {
+    style = maskStyle(screenMaskSvg(shape))
+    screenStyles.set(shape, style)
+  }
+  return style
+}
+
+/** Inline style that cuts an element's `corners` to the body outline of `band` */
+export function bodyShapeStyle(
+  shape: ScreenShape, band: FrameBand, corners: readonly (keyof ScreenShape)[],
+): React.CSSProperties {
+  const paths = bodyCornerPaths(shape, paddingSides(band.padding), 0, band.circles)
+  return maskStyle(cornerMaskSvg(Object.fromEntries(corners.map((key) => [key, paths[key]]))))
 }

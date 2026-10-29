@@ -6,7 +6,7 @@ import { render } from '@testing-library/react'
 import { MockFrame, CustomMockFrame, DeviceOptions } from '../MockFrame'
 import type { MockFrameProps } from '../MockFrame'
 import {
-  DUO_SCREEN_SHAPES, FRAME_BANDS, SCREEN_SHAPES, bodyCornerPaths, screenMaskSvg, screenShapeStyle,
+  DUO_BANDS, DUO_SCREEN_SHAPES, FRAME_BANDS, SCREEN_SHAPES, bodyCornerPaths, paddingSides, screenMaskSvg, screenShapeStyle,
 } from '../ScreenShape'
 
 describe('MockFrame className/style merging', () => {
@@ -190,7 +190,7 @@ describe('superellipse body and band', () => {
   })
 
   it('leaves the CSS body on frames without a band', () => {
-    for (const props of [{ device: 'iPhone X' }, { device: 'iPad Pro', color: 'silver' }] as MockFrameProps[]) {
+    for (const props of [{ device: 'iPhone X' }, { device: 'iPhone 8', color: 'black' }] as MockFrameProps[]) {
       const { container, unmount } = render(<MockFrame {...props} />)
       expect(container.firstElementChild).not.toHaveClass('superellipse-body')
       expect(container.querySelector('svg.body')).toBeNull()
@@ -198,27 +198,67 @@ describe('superellipse body and band', () => {
     }
   })
 
+  it('draws the iPad Pro body with its four rings and glass glow', () => {
+    const { container } = render(<MockFrame device="iPad Pro" color="silver" />)
+    expect(container.firstElementChild).toHaveClass('superellipse-body')
+    expect(container.querySelectorAll('svg.body g[mask] > g')).toHaveLength(5)
+  })
+
+  it('draws both iPhone Duo bodies, keeping the small hinge-side corners of the closed panel', () => {
+    const { container, rerender } = render(<MockFrame device="iPhone Duo" color="night-sky" />)
+    const panel = container.querySelector('.duo-panel')!
+    expect(panel).toHaveClass('superellipse-body')
+    expect(panel.querySelectorAll(':scope > svg.body g[mask] > g')).toHaveLength(24)
+    // The hinge side keeps a 4px circle: the body corner starts 4px from the corner
+    expect(panel.querySelector('mask path')!.getAttribute('d')).toMatch(/^M 0\.00,4\.00 /)
+    rerender(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
+    const frame = container.querySelector('.duo-frame')!
+    expect(frame).toHaveClass('superellipse-body')
+    expect(frame.querySelectorAll(':scope > svg.body g[mask] > g')).toHaveLength(18)
+  })
+
+  it('cuts the half-open side walls and shade to the open body and screen', () => {
+    const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" pose="half-open" />)
+    for (const el of container.querySelectorAll<HTMLElement>('.duo-wall, .duo-shade')) {
+      expect(el.style.borderRadius).toBe('0px')
+      expect(el.style.maskImage).toMatch(/^url\("data:image\/svg\+xml,/)
+    }
+  })
+
   it('starts the body corner where the screen corner starts, one glass border further out', () => {
+    const sides = paddingSides([14.33, 14.67])
     // The top-left body corner of the iPhone 17 begins on the left edge, 14.33 + 77.43 px down
-    const paths = bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, [14.67, 14.33], 0)
-    expect(paths.topLeft).toMatch(/^M 0\.00,91\.76 /)
+    expect(bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, sides, 0).topLeft).toMatch(/^M 0\.00,91\.76 /)
     // A ring 2 px in starts on the line x = 2
-    expect(bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, [14.67, 14.33], 2).topLeft).toMatch(/^M 2\.00,91\.76 /)
+    expect(bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, sides, 2).topLeft).toMatch(/^M 2\.00,91\.76 /)
+    // A circular corner smaller than the depth becomes square
+    expect(bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, sides, 6, { topLeft: 4 }).topLeft).toMatch(/^M 6\.00,6\.00 /)
+  })
+
+  it('expands the CSS padding shorthand and turns it for landscape', () => {
+    expect(paddingSides([22.33])).toEqual({ top: 22.33, right: 22.33, bottom: 22.33, left: 22.33 })
+    expect(paddingSides([14.33, 14.67])).toEqual({ top: 14.33, right: 14.67, bottom: 14.33, left: 14.67 })
+    expect(paddingSides([16, 16, 16, 14], true)).toEqual({ top: 16, right: 16, bottom: 14, left: 16 })
   })
 
   it('matches the padding and band rings in mockframe.css', () => {
     const css = readFileSync(resolve(__dirname, '../../css/mockframe.css'), 'utf8')
+    const ringsOf = (block: string, color: string) =>
+      [...block.matchAll(new RegExp(`inset 0 0 0 ([\\d.]+)px var\\(${color}\\d+\\)`, 'g'))].map((m) => Number(m[1]))
     for (const [name, band] of Object.entries(FRAME_BANDS)) {
       const cls = DeviceOptions[name as keyof typeof DeviceOptions].device
       const start = css.indexOf(`&.${cls} {`)
       const block = css.slice(start, css.indexOf('.screen', start))
-      const padding = block.match(/padding: ([\d.]+)px ([\d.]+)px/)!.slice(1).map(Number)
+      const padding = block.match(/padding: ([\d.]+)px(?: ([\d.]+)px)?;/)!.slice(1).filter(Boolean).map(Number)
       expect(padding, name).toEqual(band!.padding)
-      const rings = [...block.matchAll(/inset 0 0 0 ([\d.]+)px var\(--mf-b\d+\)/g)].map((m) => Number(m[1]))
-      expect(rings, name).toEqual(band!.rings)
+      expect(ringsOf(block, '--mf-b'), name).toEqual(band!.rings)
       const glass = block.match(/inset 0 0 ([\d.]+)px ([\d.]+)px var\(--mf-glass\)/)
       expect(glass && { spread: Number(glass[2]), blur: Number(glass[1]) }, name).toEqual(band!.glass ?? null)
     }
+    const duo = css.slice(css.indexOf('&.iphone-duo {'))
+    const blockAt = (selector: string) => duo.slice(duo.indexOf(selector), duo.indexOf('}', duo.indexOf(selector)))
+    expect(ringsOf(blockAt('.duo-panel {'), '--duo-k')).toEqual(DUO_BANDS.outer.rings)
+    expect(ringsOf(blockAt('.duo-frame {'), '--duo-o')).toEqual(DUO_BANDS.inner.rings)
   })
 })
 
@@ -248,5 +288,44 @@ describe('iPhone 17 Pro Max, 18 Pro Max, Air and 12 mini', () => {
     expect(container.querySelector('.notch .camera')).not.toBeNull()
     rerender(<MockFrame device="iPhone 12 mini" color="white" hideNotch />)
     expect(container.querySelector('.notch')).toBeNull()
+  })
+})
+
+describe('Pixel 9 Pro, 10 Pro, 9 Pro Fold and 10 Pro Fold', () => {
+  it('render the Pro phones at the 427x952 viewport with a punch-hole camera', () => {
+    for (const [device, color, cls] of [
+      ['Pixel 9 Pro', 'rose-quartz', 'pixel9pro'],
+      ['Pixel 10 Pro', 'moonstone', 'pixel10pro'],
+    ] as const) {
+      const { container, unmount } = render(<MockFrame {...({ device, color } as MockFrameProps)} />)
+      expect(container.firstChild).toHaveClass('mockframe', cls, color)
+      expect(DeviceOptions[device]).toMatchObject({ width: 427, height: 952 })
+      expect(container.querySelector('.camera')).not.toBeNull()
+      unmount()
+    }
+  })
+
+  it('draws the Folds closed by default and open with pose="open"', () => {
+    const { container, rerender } = render(<MockFrame device="Pixel 10 Pro Fold" color="jade" />)
+    const root = container.firstChild as HTMLElement
+    expect(root).toHaveClass('mockframe', 'pixel10profold', 'jade', 'fold-closed')
+    expect(container.querySelector('.spine')).not.toBeNull()
+    expect(container.querySelectorAll('.hinge')).toHaveLength(2)
+    rerender(<MockFrame device="Pixel 10 Pro Fold" color="jade" pose="open" landscape />)
+    expect(root).toHaveClass('fold-open', 'landscape')
+    expect(root).not.toHaveClass('fold-closed')
+    expect(root).not.toHaveAttribute('pose')
+  })
+
+  it('falls back to the closed pose for a pose the Fold does not have', () => {
+    const { container } = render(
+      <MockFrame {...({ device: 'Pixel 9 Pro Fold', color: 'obsidian', pose: 'half-open' } as unknown as MockFrameProps)} />
+    )
+    expect(container.firstChild).toHaveClass('fold-closed')
+  })
+
+  it('does not add a pose class to devices without poses', () => {
+    const { container } = render(<MockFrame device="Pixel 10" color="indigo" />)
+    expect((container.firstChild as HTMLElement).className).not.toMatch(/fold-/)
   })
 })

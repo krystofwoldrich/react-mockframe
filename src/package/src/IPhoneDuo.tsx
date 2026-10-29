@@ -14,7 +14,8 @@
 
 import * as React from 'react'
 
-import { DUO_SCREEN_SHAPES, screenShapeStyle } from './ScreenShape'
+import { DUO_BANDS, DUO_SCREEN_SHAPES, bodyShapeStyle, screenShapeStyle } from './ScreenShape'
+import { FrameBody } from './FrameBody'
 
 export type DuoPose = 'closed' | 'half-open' | 'open'
 
@@ -67,6 +68,12 @@ function matrix3d(src: Pt[], dst: Pt[]): string {
   return `matrix3d(${[a, d, 0, g, b, e, 0, h, 0, 0, 1, 0, c, f, 0, 1].map((n) => +n!.toFixed(9)).join(',')})`
 }
 
+/** Half-open side walls: the open body's outline, so the walls follow its superellipse corners */
+const WALL_STYLES = {
+  left: bodyShapeStyle(DUO_SCREEN_SHAPES.inner, DUO_BANDS.inner, ['topLeft', 'bottomLeft']),
+  right: bodyShapeStyle(DUO_SCREEN_SHAPES.inner, DUO_BANDS.inner, ['topRight', 'bottomRight']),
+}
+
 /** Mark a duplicated subtree inert (works with React 18 and 19) */
 const setInert = (el: HTMLElement | null) => el?.setAttribute('inert', '')
 
@@ -98,14 +105,17 @@ function DuoDevice({ inner, sw, sh, rotated, hideCamera, duplicate, half, childr
     >
       {inner ? (
         <>
-          <div className="duo-frame" />
+          <div className="duo-frame superellipse-body">
+            <FrameBody shape={DUO_SCREEN_SHAPES.inner} band={DUO_BANDS.inner} />
+          </div>
           <div className="duo-hinge duo-hinge--top" />
           <div className="duo-hinge duo-hinge--bottom" />
         </>
       ) : (
         <>
           <div className="duo-spine" />
-          <div className="duo-panel">
+          <div className="duo-panel superellipse-body">
+            <FrameBody shape={DUO_SCREEN_SHAPES.outer} band={DUO_BANDS.outer} />
             <div className="duo-strip-b" />
           </div>
         </>
@@ -132,8 +142,8 @@ function DuoDevice({ inner, sw, sh, rotated, hideCamera, duplicate, half, childr
       {!hideCamera && <div className="duo-camera" />}
       {half && (
         <>
-          <div className={`duo-wall duo-wall--${half}`} />
-          <div className={`duo-shade duo-shade--${half}`} />
+          <div className={`duo-wall duo-wall--${half}`} style={WALL_STYLES[half]} />
+          <div className={`duo-shade duo-shade--${half}`} style={screenShapeStyle(DUO_SCREEN_SHAPES.inner)} />
         </>
       )}
     </div>

@@ -2417,6 +2417,374 @@
 	}
 
 	/* ===========================================
+	   			GOOGLE PIXEL 9 PRO, PIXEL 10 PRO
+	   427×952 CSS viewport (Chrome DevTools' Pixel 9 Pro entry; 1280×2856 at
+	   480 dpi). Both phones share the display and the 72.0×152.8 mm body
+	   (Google's tech specs), at 6.5 px/mm from the 51.3 µm pixel pitch. Screen
+	   corner radius (157 px) and punch-hole (r 49 px at 640, 102) come from the
+	   device configs (caiman, blazer). Body corner, frame band and buttons are
+	   measured on Google's product renders.
+	   =========================================== */
+
+	&.pixel9pro, &.pixel10pro {
+		width: 427px;
+		height: 952px;
+		padding: 20.43px 20.42px;
+		border-radius: 78.75px;
+		background: #000;
+		/* Polished aluminium frame, then the glass edge fading into the black border */
+		box-shadow:
+			inset 0 0 0 0.75px rgba(0, 0, 0, 0.3),
+			inset 0 0 2px 2.5px rgba(255, 255, 255, 0.18),
+			inset 0 0 0 6.5px var(--mf-frame),
+			inset 0 0 3px 8px #1c1c1c;
+
+		.screen {
+			border-radius: 52.33px;
+			box-shadow: none;
+		}
+
+		/* Punch-hole camera, centred 34px below the top of the screen */
+		.camera {
+			position: absolute;
+			top: 38.09px;
+			left: 50%;
+			width: 32.67px;
+			height: 32.67px;
+			margin-left: -16.33px;
+			border-radius: 50%;
+			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
+			z-index: 5;
+		}
+
+		/* Power, then the volume rocker, both on the right */
+		.sleep, .volume {
+			position: absolute;
+			right: -3px;
+			width: 3px;
+			border-radius: 0 2px 2px 0;
+			background: var(--mf-frame);
+			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.25), inset 1px 0 1px rgba(0, 0, 0, 0.25);
+		}
+
+		/* Landscape: rotated counter-clockwise, camera on the left */
+		&.landscape {
+			width: 952px;
+			height: 427px;
+
+			.camera {
+				top: 50%;
+				left: 38.09px;
+				margin: -16.33px 0 0;
+			}
+
+			.sleep, .volume {
+				top: -3px;
+				right: auto;
+				height: 3px;
+				border-radius: 2px 2px 0 0;
+				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+			}
+		}
+
+		.top-bar, .bottom-bar, .sensor, .speaker, .sensors, .more-sensors, .inner-shadow, .home, .inner {
+			display: none;
+		}
+	}
+
+	/* Frame colours are Google Store swatches (archived 2025 for the Pixel 9 Pro) */
+	&.pixel9pro {
+		/* Obsidian (default) */
+		--mf-frame: #343434;
+
+		&.porcelain { --mf-frame: #f5f1ec; }
+		&.hazel { --mf-frame: #949997; }
+		&.rose-quartz { --mf-frame: #f4ddec; }
+
+		.sleep { top: 270.06px; height: 79.43px; }
+		.volume { top: 397.14px; height: 144.96px; }
+
+		&.landscape {
+			.sleep { left: 270.06px; width: 79.43px; }
+			.volume { left: 397.14px; width: 144.96px; }
+		}
+	}
+
+	&.pixel10pro {
+		/* Obsidian (default) */
+		--mf-frame: #434643;
+
+		&.porcelain { --mf-frame: #f1ebe4; }
+		&.moonstone { --mf-frame: #7d8291; }
+		&.jade { --mf-frame: #d9e9ca; }
+
+		.sleep { top: 276.01px; height: 77.44px; }
+		.volume { top: 399.13px; height: 137.01px; }
+
+		&.landscape {
+			.sleep { left: 276.01px; width: 77.44px; }
+			.volume { left: 399.13px; width: 137.01px; }
+		}
+	}
+
+	/* ===========================================
+	   		GOOGLE PIXEL 9 PRO FOLD, PIXEL 10 PRO FOLD
+	   Closed: the outer display. 9 Pro Fold 412×922 (Chrome DevTools, DPR 2.625);
+	   10 Pro Fold 412×901 (1080×2364 at the same DPR). Open: the 2076×2152
+	   inner display at 390 dpi (device configs comet, rango) = 852×883. Bodies
+	   are Google's folded / unfolded mm at each display's px per mm (from its
+	   PPI); the bezels are equal on all sides and the rest of the closed width
+	   is the hinge, on the left. Screen corner radii (outer 115 px, inner 85 px)
+	   and punch-holes come from the device configs. Buttons on the right, and
+	   the hinge marks of the open device, are measured on Google's renders.
+	   =========================================== */
+
+	&.pixel9profold, &.pixel10profold {
+		background: #000;
+		box-shadow:
+			inset 0 0 0 0.75px rgba(0, 0, 0, 0.3),
+			inset 0 0 2px 2.5px rgba(255, 255, 255, 0.18),
+			inset 0 0 0 5.5px var(--mf-frame),
+			inset 0 0 3px 7px #1c1c1c;
+
+		.screen {
+			box-shadow: none;
+		}
+
+		.camera {
+			position: absolute;
+			border-radius: 50%;
+			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
+			z-index: 5;
+		}
+
+		/* Hinge, seen from the outer display's side: a frame-coloured spine on the left.
+		   It covers the whole body (so it follows the body's corners) and only its
+		   first --mf-spine px are painted. */
+		.spine {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			border-radius: inherit;
+			background:
+				linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.55))
+					0 0 / var(--mf-spine) 100% no-repeat,
+				linear-gradient(var(--mf-frame), var(--mf-frame)) 0 0 / var(--mf-spine) 100% no-repeat;
+			z-index: 1;
+		}
+
+		/* Hinge marks at the fold, top and bottom (open only) */
+		.hinge {
+			position: absolute;
+			left: 50%;
+			height: 3px;
+			border-radius: 1.5px;
+			background: #5a5b5d;
+			z-index: 1;
+			display: none;
+		}
+
+		.hinge--top { top: 6px; }
+		.hinge--bottom { bottom: 6px; }
+
+		/* Power, then the volume rocker, both on the right */
+		.sleep, .volume {
+			position: absolute;
+			right: -3px;
+			width: 3px;
+			border-radius: 0 2px 2px 0;
+			background: var(--mf-frame);
+			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.25), inset 1px 0 1px rgba(0, 0, 0, 0.25);
+		}
+
+		/* Closed (default): outer display */
+		.screen {
+			border-radius: 43.81px;
+		}
+
+		&.fold-open {
+			width: 852px;
+			height: 883px;
+			border-radius: 60.88px;
+
+			.screen {
+				border-radius: 34.87px;
+			}
+
+			.spine {
+				display: none;
+			}
+
+			.hinge {
+				display: block;
+			}
+
+			.camera {
+				left: auto;
+				margin: 0;
+			}
+
+			.sleep { top: 273.03px; height: 88.83px; }
+			.volume { top: 420.76px; height: 122.49px; }
+		}
+
+		/* Landscape: rotated counter-clockwise */
+		&.landscape {
+			.sleep, .volume {
+				top: -3px;
+				right: auto;
+				height: 3px;
+				border-radius: 2px 2px 0 0;
+				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+			}
+
+			.spine {
+				background:
+					linear-gradient(to top, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.55))
+						0 100% / 100% var(--mf-spine) no-repeat,
+					linear-gradient(var(--mf-frame), var(--mf-frame)) 0 100% / 100% var(--mf-spine) no-repeat;
+			}
+
+			.hinge {
+				top: 50%;
+				left: auto;
+				width: 3px;
+			}
+
+			.hinge--top { left: 6px; right: auto; }
+			.hinge--bottom { right: 6px; left: auto; }
+
+			&.fold-open {
+				width: 883px;
+				height: 852px;
+
+				.sleep { top: -3px; left: 273.03px; width: 88.83px; }
+				.volume { top: -3px; left: 420.76px; width: 122.49px; }
+			}
+		}
+
+		.top-bar, .bottom-bar, .sensor, .speaker, .sensors, .more-sensors, .inner-shadow, .home, .inner {
+			display: none;
+		}
+	}
+
+	&.pixel9profold {
+		/* Obsidian (default); Pixel 9 Pro swatches, the Fold has the same two finishes */
+		--mf-frame: #343434;
+
+		&.porcelain { --mf-frame: #f5f1ec; }
+
+		/* Closed */
+		width: 412px;
+		height: 922px;
+		padding: 30.15px 30.15px 30.15px 45.84px;
+		border-radius: 73.96px;
+
+		--mf-spine: 15.69px;
+
+		.camera {
+			top: 47.1px;
+			left: 235.74px;
+			width: 31.62px;
+			height: 31.62px;
+		}
+
+		.sleep { top: 286.83px; height: 93.32px; }
+		.volume { top: 442.03px; height: 128.68px; }
+
+		.hinge { width: 43px; margin-left: -21.5px; }
+
+		&.fold-open {
+			padding: 26.01px 26.45px;
+
+			.camera {
+				top: 42.63px;
+				left: 825.63px;
+				width: 32.41px;
+				height: 32.41px;
+			}
+		}
+
+		&.landscape {
+			width: 922px;
+			height: 412px;
+			padding: 30.15px 30.15px 45.84px;
+
+			.camera { top: 220.63px; left: 47.1px; }
+
+			.sleep { left: 286.83px; width: 93.32px; }
+			.volume { left: 442.03px; width: 128.68px; }
+
+			.hinge { height: 43px; margin: -21.5px 0 0; }
+
+			&.fold-open {
+				padding: 26.45px 26.01px;
+
+				.camera { top: 46.86px; left: 42.63px; }
+			}
+		}
+	}
+
+	&.pixel10profold {
+		/* Moonstone (default) */
+		--mf-frame: #7d8291;
+
+		&.jade { --mf-frame: #d9e9ca; }
+
+		/* Closed */
+		width: 412px;
+		height: 901px;
+		padding: 24.35px 24.35px 24.35px 30.54px;
+		border-radius: 68.16px;
+
+		--mf-spine: 6.19px;
+
+		.camera {
+			top: 40.35px;
+			left: 221.78px;
+			width: 28.57px;
+			height: 28.57px;
+		}
+
+		.sleep { top: 277.31px; height: 90.22px; }
+		.volume { top: 427.37px; height: 124.41px; }
+
+		.hinge { width: 49px; margin-left: -24.5px; }
+
+		&.fold-open {
+			padding: 26.01px 27.05px;
+
+			.camera {
+				top: 42.63px;
+				left: 826.23px;
+				width: 32.41px;
+				height: 32.41px;
+			}
+		}
+
+		&.landscape {
+			width: 901px;
+			height: 412px;
+			padding: 24.35px 24.35px 30.54px;
+
+			.camera { top: 216.54px; left: 40.35px; }
+
+			.sleep { left: 277.31px; width: 90.22px; }
+			.volume { left: 427.37px; width: 124.41px; }
+
+			.hinge { height: 49px; margin: -24.5px 0 0; }
+
+			&.fold-open {
+				padding: 27.05px 26.01px;
+
+				.camera { top: 47.46px; left: 42.63px; }
+			}
+		}
+	}
+
+	/* ===========================================
 	   			SAMSUNG GALAXY S25
 	   360×780 CSS viewport (1080×2340 at DPR 3). Bezel, corner radii,
 	   punch-hole and buttons follow Samsung's specs and product renders.
@@ -2879,6 +3247,13 @@
 			background: linear-gradient(to right, transparent 50%, rgba(0, 0, 0, calc(var(--duo-fold-shade) * 0.8)) 50%, transparent calc(50% + 90px));
 		}
 
+		/* With React, an SVG in the panel and the frame draws the superellipse
+		   body and band (see `.superellipse-body` at the end of this file) */
+		.duo-panel.superellipse-body, .duo-inner .duo-frame.superellipse-body {
+			background: none;
+			box-shadow: none;
+		}
+
 		.duo-half--left {
 			clip-path: inset(-12px calc(50% - 0.5px) -12px -12px);
 		}
@@ -2958,8 +3333,9 @@
 	}
 
 	/* Superellipse body and band, drawn by the React component as an SVG: it replaces
-	   the circular CSS body (`border-radius`) and band (inset `box-shadow` rings) */
-	&.superellipse-body {
+	   the circular CSS body (`border-radius`) and band (inset `box-shadow` rings).
+	   On the iPhone Duo it sits in `.duo-panel` and `.duo-frame` instead. */
+	&.superellipse-body, & .superellipse-body {
 		background: none;
 		box-shadow: none;
 		isolation: isolate;

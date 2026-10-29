@@ -14,9 +14,9 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 
 ## Features
 
-- **16 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 12 mini, iPhone 17, iPhone 17 Pro Max, iPhone 18 Pro, iPhone 18 Pro Max, iPhone Air, iPhone Duo (foldable), Pixel 10, Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
+- **20 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 12 mini, iPhone 17, iPhone 17 Pro Max, iPhone 18 Pro, iPhone 18 Pro Max, iPhone Air, iPhone Duo (foldable), Pixel 10, Pixel 10 Pro, Pixel 9 Pro, Pixel 10 Pro Fold and Pixel 9 Pro Fold (foldables), Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
 - **Measured, Not Eyeballed** - iPhone 12 mini, 17, 17 Pro Max, 18 Pro, 18 Pro Max, Air, Duo, iPad Pro and MacBook Pro frames are measured from Apple's official product bezels (99.8% shape match): real screen sizes, corner radii, bezels, Dynamic Island, notch and button positions, with frame colours sampled per finish
-- **Real Screen Shapes** - Apple-frame screens use superellipse corners fitted to the bezels, not a circular `border-radius`. On the iPhone 12 mini, 17, 18 Pro, 17 Pro Max, 18 Pro Max and Air, the body and band follow the screen corner too, so the black border has one width all around
+- **Real Screen Shapes** - Apple-frame screens use superellipse corners fitted to the bezels, not a circular `border-radius`. On the iPhone 12 mini, 17, 18 Pro, 17 Pro Max, 18 Pro Max, Air, Duo and the iPad Pro, the body and band follow the screen corner too, so the black border has one width all around
 - **Multiple Color Variants** - Authentic device colors for each model
 - **Landscape Mode** - Rotate phones and tablets
 - **Notch/Dynamic Island Toggle** - Show or hide notches
@@ -41,13 +41,17 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 | iPhone Air | space-black, cloud-white, light-gold, sky-blue | Yes | Dynamic Island |
 | iPhone Duo | night-sky, star-white | Yes | Camera (3 fold poses) |
 | Pixel 10 | obsidian, frost, indigo, lemongrass | Yes | - |
+| Pixel 10 Pro | obsidian, porcelain, moonstone, jade | Yes | - |
+| Pixel 9 Pro | obsidian, porcelain, hazel, rose-quartz | Yes | - |
+| Pixel 10 Pro Fold | moonstone, jade | Yes | - (2 fold poses) |
+| Pixel 9 Pro Fold | obsidian, porcelain | Yes | - (2 fold poses) |
 | Galaxy S25 | blue-black, icy-blue, navy, mint, silver-shadow, coral-red, pink-gold | Yes | - |
 | iPad Mini | black, silver | Yes | - |
 | iPad Pro | space-black, silver | Yes | - |
 | MacBook Pro 2020 | - | - | - |
 | MacBook Pro | space-black, silver | - | Notch |
 
-Default screen sizes (CSS px) match each device's real viewport: iPhone 12 mini 360×780, iPhone 17 / 18 Pro 402×874, iPhone 17 Pro Max / 18 Pro Max 440×956, iPhone Air 420×912, Pixel 10 412×924, Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
+Default screen sizes (CSS px) match each device's real viewport: iPhone 12 mini 360×780, iPhone 17 / 18 Pro 402×874, iPhone 17 Pro Max / 18 Pro Max 440×956, iPhone Air 420×912, Pixel 10 412×924, Pixel 9 Pro / 10 Pro 427×952, Pixel 9 Pro Fold 412×922 (closed) / 852×883 (open), Pixel 10 Pro Fold 412×901 (closed) / 852×883 (open), Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
 
 `gold` and `natural-titanium` are not iPhone 18 Pro finishes (Apple sells Black, Silver, Glacier and Burgundy). `gold` is Apple's iPhone Air Light Gold applied to the 18 Pro's satin aluminium, and `natural-titanium` is sampled from Apple's iPhone 16 Pro Natural Titanium. Older colour names stay accepted for compatibility: `space-gray` (iPad Pro, MacBook Pro), `porcelain` / `mint` / `rose` (Pixel 10), `phantom-black` / `silver` (Galaxy S25).
 
@@ -124,6 +128,20 @@ with the perspective of Apple's own render.
   screen readers, so interactive content only works on the left half. Images and videos look right across both.
 - The half turned away from the light is shaded; set the CSS variable `--duo-fold-shade` (default `0.22`) on the
   frame to change it, or `0` to turn it off.
+
+### Pixel 9 Pro Fold and Pixel 10 Pro Fold: closed, open
+
+Google's foldables have two poses: closed shows the outer display, open the near-square inner display.
+
+```tsx
+<MockFrame device="Pixel 10 Pro Fold" color="moonstone">            {/* closed (default) */}
+<MockFrame device="Pixel 10 Pro Fold" color="jade" pose="open">     {/* inner display */}
+```
+
+- Both poses are naturally portrait; `landscape` turns either one.
+- Sizes come from Google's specs (body in mm, display resolution and PPI), the screen corner radii and camera
+  cut-outs from the devices' Android display configs, and the closed size of the 9 Pro Fold from Chrome
+  DevTools. The closed device has the hinge on the left; the open device has the hinge marks at the fold.
 
 ### Hide Notch / Dynamic Island
 
@@ -366,7 +384,7 @@ The interactive demo website includes:
 
 ## Credits
 
-Device frame styles are adapted from [Marvel devices.css](https://github.com/marvelapp/devices.css) (MIT © 2014 Marvelapp). Newer device frames (iPhone 17, iPhone 18 Pro, iPhone Duo, Pixel 10, Galaxy S25, iPad Pro, MacBook Pro) and all React/TypeScript code are original to this project. Apple frame measurements come from Apple's [product bezels](https://developer.apple.com/design/resources/#product-bezels); no Apple artwork is included.
+Device frame styles are adapted from [Marvel devices.css](https://github.com/marvelapp/devices.css) (MIT © 2014 Marvelapp). Newer device frames (iPhone 17, iPhone 18 Pro, iPhone Duo, Pixel 10, Pixel 9 Pro, Pixel 10 Pro, Pixel 9 Pro Fold, Pixel 10 Pro Fold, Galaxy S25, iPad Pro, MacBook Pro) and all React/TypeScript code are original to this project. Apple frame measurements come from Apple's [product bezels](https://developer.apple.com/design/resources/#product-bezels); no Apple artwork is included.
 
 ## Author
 

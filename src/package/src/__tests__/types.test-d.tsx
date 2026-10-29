@@ -40,6 +40,10 @@ export const v10 = <MockFrame device="iPhone Duo" color="night-sky" />
 export const v11 = <MockFrame device="iPhone 18 Pro Max" color="glacier" landscape />
 export const v12 = <MockFrame device="iPhone Air" color="sky-blue" />
 export const v13 = <MockFrame device="iPhone 12 mini" color="white" hideNotch />
+export const v14 = <MockFrame device="Pixel 9 Pro" color="hazel" landscape />
+export const v15 = <MockFrame device="Pixel 10 Pro" color="jade" />
+export const v16 = <MockFrame device="Pixel 9 Pro Fold" color="porcelain" pose="open" />
+export const v17 = <MockFrame device="Pixel 10 Pro Fold" color="moonstone" pose="closed" landscape />
 
 /* ---- Invalid usages: each MUST error, or the @ts-expect-error fails the build ---- */
 // @ts-expect-error iPhone X has no color variants
@@ -60,3 +64,7 @@ export const x8 = <MockFrame device="iPhone Duo" color="night-sky" pose="flat" /
 export const x6 = <MockFrame device="iPhone 18 Pro" color="cosmic-orange" />
 // @ts-expect-error the iPhone 12 mini frame has no landscape variant
 export const x9 = <MockFrame device="iPhone 12 mini" color="white" landscape />
+// @ts-expect-error the Pixel Pro Folds have no half-open pose
+export const x10 = <MockFrame device="Pixel 9 Pro Fold" color="obsidian" pose="half-open" />
+// @ts-expect-error 'obsidian' is not a Pixel 10 Pro Fold colour (Moonstone and Jade only)
+export const x11 = <MockFrame device="Pixel 10 Pro Fold" color="obsidian" />

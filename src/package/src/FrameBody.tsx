@@ -5,7 +5,7 @@
  * `box-shadow` rings, which follow that circle. Next to a superellipse screen the
  * black border then gets thinner and thicker around the corner. This SVG redraws
  * the body, the glass glow and the band rings as offset curves of the screen's
- * superellipse, with the same colors (`--mf-b1` … `--mf-b12`, `--mf-glass`).
+ * superellipse, with the same color variables as the CSS (`--mf-b1`, `--mf-glass`, …).
  *
  * Each layer is everything less than `depth` px inside the body edge: a rect
  * stroke covers the straight edges and the corner cut-outs cover the corners.
@@ -14,14 +14,7 @@
 
 import * as React from 'react'
 import type { FrameBand, ScreenShape, CornerPaths } from './ScreenShape'
-import { bodyCornerPaths } from './ScreenShape'
-
-const CORNERS: { key: keyof CornerPaths, x: string, y: string, scale: string }[] = [
-  { key: 'topLeft', x: '0', y: '0', scale: '1 1' },
-  { key: 'topRight', x: '100%', y: '0', scale: '-1 1' },
-  { key: 'bottomRight', x: '100%', y: '100%', scale: '-1 -1' },
-  { key: 'bottomLeft', x: '0', y: '100%', scale: '1 -1' },
-]
+import { CORNERS, bodyCornerPaths, paddingSides } from './ScreenShape'
 
 const Corners = ({ paths }: { paths: CornerPaths }) => (
   <>
@@ -44,16 +37,15 @@ const Layer = ({ paths, depth, color, filter }: { paths: CornerPaths, depth: num
 export const FrameBody = ({ shape, band, landscape }: { shape: ScreenShape, band: FrameBand, landscape?: boolean }) => {
   const id = React.useId().replace(/[^\w-]/g, '')
   const layers = React.useMemo(() => {
-    // CSS padding order is [vertical, horizontal]; the corner math wants [x, y]
-    const padding: [number, number] = landscape
-      ? [band.padding[0], band.padding[1]]
-      : [band.padding[1], band.padding[0]]
+    const sides = paddingSides(band.padding, landscape)
+    const ringColor = band.ringColor ?? '--mf-b'
+    const paths = (depth: number) => bodyCornerPaths(shape, sides, depth, band.circles)
     return {
-      body: bodyCornerPaths(shape, padding, 0),
-      glass: band.glass && bodyCornerPaths(shape, padding, band.glass.spread),
+      body: paths(0),
+      glass: band.glass && paths(band.glass.spread),
       // Widest ring first: each ring is painted over the next one in
       rings: band.rings
-        .map((depth, i) => ({ depth, color: `var(--mf-b${i + 1})`, paths: bodyCornerPaths(shape, padding, depth) }))
+        .map((depth, i) => ({ depth, color: `var(${ringColor}${i + 1})`, paths: paths(depth) }))
         .reverse(),
     }
   }, [shape, band, landscape])
@@ -72,7 +64,7 @@ export const FrameBody = ({ shape, band, landscape }: { shape: ScreenShape, band
         )}
       </defs>
       <g mask={`url(#${id}-body)`}>
-        <rect width="100%" height="100%" fill="#000" />
+        <rect width="100%" height="100%" style={{ fill: band.background ?? '#000' }} />
         {band.glass && layers.glass && (
           <Layer paths={layers.glass} depth={band.glass.spread} color="var(--mf-glass)" filter={`url(#${id}-glass)`} />
         )}

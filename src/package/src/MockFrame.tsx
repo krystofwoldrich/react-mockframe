@@ -131,6 +131,18 @@ const DynamicIslandAnatomy = ({ hideNotch }: { hideNotch?: boolean }) => (
 )
 
 /**
+ * Hinge parts of the Pixel Pro Folds: the spine beside the outer display (closed)
+ * and the marks at the fold (open). The CSS shows the ones for the current pose.
+ */
+const PixelFoldAnatomy = () => (
+  <>
+    <div className="spine" />
+    <div className="hinge hinge--top" />
+    <div className="hinge hinge--bottom" />
+  </>
+)
+
+/**
  * Device-specific anatomy elements rendered BEFORE the common elements.
  * Maps device names to their unique structural components (notches, antennas, etc.).
  */
@@ -168,6 +180,10 @@ const DeviceAnatomy: Partial<Record<DeviceName, (hideNotch?: boolean) => React.R
       <div className="action" />
     </>
   ),
+
+  'Pixel 10 Pro Fold': () => <PixelFoldAnatomy />,
+
+  'Pixel 9 Pro Fold': () => <PixelFoldAnatomy />,
 
   'iPad Pro': () => (
     <>
@@ -440,7 +456,7 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   const pose = 'pose' in props ? (props.pose as DuoPose | undefined) : undefined
 
   // `device` can come from untyped data at runtime, so the lookup may miss
-  const config: { device: string, hasLandscape: boolean } | undefined = DeviceOptions[device]
+  const config: { device: string, hasLandscape: boolean, poses?: readonly string[] } | undefined = DeviceOptions[device]
   const isLandscape = Boolean(landscape && config?.hasLandscape)
 
   // Compute inline styles for dimensions and transforms
@@ -482,8 +498,12 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   const screenShape = SCREEN_SHAPES[device]
   const band = screenShape && FRAME_BANDS[device]
 
+  // Foldables: the CSS draws the current pose (the first one by default)
+  const foldPose = config.poses && (pose && config.poses.includes(pose) ? pose : config.poses[0])
+
   const className = cx(
-    'mockframe', config.device, color, isLandscape && 'landscape', band && 'superellipse-body', userClassName
+    'mockframe', config.device, color, isLandscape && 'landscape', foldPose && `fold-${foldPose}`,
+    band && 'superellipse-body', userClassName
   )
 
   return (

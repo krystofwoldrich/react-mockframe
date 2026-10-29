@@ -8,7 +8,7 @@ const distDir = path.join(__dirname, '../dist/styles');
 // Device family mappings (values are the `device` CSS classes from src/DeviceOptions.ts)
 const deviceFamilies = {
   iphones: ['iphone8', 'iphone8plus', 'iphone-x', 'iphone12mini', 'iphone17', 'iphone17promax', 'iphone18pro', 'iphone18promax', 'iphone-air', 'iphone-duo'],
-  android: ['pixel10', 'galaxy-s25'],
+  android: ['pixel10', 'pixel10pro', 'pixel9pro', 'pixel10profold', 'pixel9profold', 'galaxy-s25'],
   tablets: ['ipad', 'ipad-pro'],
   laptops: ['macbook', 'macbook-pro'],
 };
@@ -127,7 +127,7 @@ function buildModularCSS() {
   console.log('\nModular CSS build complete!');
   console.log('Available bundles:');
   console.log('  - mockframe-iphones.css (iPhone 8, 8 Plus, X, 12 mini, 17, 17 Pro Max, 18 Pro, 18 Pro Max, Air, Duo)');
-  console.log('  - mockframe-android.css (Pixel 10, Galaxy S25)');
+  console.log('  - mockframe-android.css (Pixel 10, 10 Pro, 9 Pro, 10 Pro Fold, 9 Pro Fold, Galaxy S25)');
   console.log('  - mockframe-tablets.css (iPad Mini, iPad Pro)');
   console.log('  - mockframe-laptops.css (MacBook Pro 2020, MacBook Pro)');
 }

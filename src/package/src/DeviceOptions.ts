@@ -112,6 +112,38 @@ export const DeviceOptions = {
         width: 412,
         height: 924,
     }),
+    ['Pixel 10 Pro']: defineDevice({
+        device: 'pixel10pro',
+        colors: ['obsidian', 'porcelain', 'moonstone', 'jade'] as const,
+        hasLandscape: true,
+        width: 427,
+        height: 952,
+    }),
+    ['Pixel 9 Pro']: defineDevice({
+        device: 'pixel9pro',
+        colors: ['obsidian', 'porcelain', 'hazel', 'rose-quartz'] as const,
+        hasLandscape: true,
+        width: 427,
+        height: 952,
+    }),
+    ['Pixel 10 Pro Fold']: defineDevice({
+        device: 'pixel10profold',
+        colors: ['moonstone', 'jade'] as const,
+        hasLandscape: true,
+        // Outer display; the inner display (open) is 852x883
+        width: 412,
+        height: 901,
+        poses: ['closed', 'open'] as const,
+    }),
+    ['Pixel 9 Pro Fold']: defineDevice({
+        device: 'pixel9profold',
+        colors: ['obsidian', 'porcelain'] as const,
+        hasLandscape: true,
+        // Outer display; the inner display (open) is 852x883
+        width: 412,
+        height: 922,
+        poses: ['closed', 'open'] as const,
+    }),
     ['Galaxy S25']: defineDevice({
         device: 'galaxy-s25',
         // 'phantom-black' (Galaxy S21-S23) and 'silver' (alias of 'silver-shadow') are kept for compatibility
