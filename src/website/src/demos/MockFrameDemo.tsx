@@ -4,6 +4,7 @@ import { MockFrame, DeviceNames, DeviceOptions } from 'react-mockframe'
 import type { DeviceName } from 'react-mockframe'
 import { Smartphone, Upload, Download, RotateCcw, ZoomIn, Move, Globe, Image as ImageIcon, Palette, Sparkles, Eye, EyeOff, ChevronDown, Check, BadgeCheck } from 'lucide-react'
 import iosScreenshot from '../assets/ios.webp'
+import iphone18ProScreenshot from '../assets/iphone-18-pro.webp'
 import androidScreenshot from '../assets/android.webp'
 import ipadScreenshot from '../assets/ipad-pro.webp'
 import macosScreenshot from '../assets/macos.webp'
@@ -277,6 +278,11 @@ function getDeviceScreenshot(device: string): string {
   const androidDevices = ['pixel', 'galaxy', 'nexus', 'samsung', 'lumia']
   if (androidDevices.some(d => lowerDevice.includes(d))) {
     return androidScreenshot
+  }
+
+  // iPhone 18 Pro: expo.dev in Safari
+  if (device === 'iPhone 18 Pro') {
+    return iphone18ProScreenshot
   }
 
   // Default to iOS (iPhones)
