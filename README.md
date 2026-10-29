@@ -2,9 +2,6 @@
 
 Device mockups for React. Showcase your apps in realistic phone, tablet, and laptop frames. Perfect for SaaS landing pages, product demos, and marketing websites.
 
-Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_source=react-mockframe&utm_medium=readme).
-
-[![npm version](https://img.shields.io/npm/v/react-mockframe.svg)](https://www.npmjs.com/package/react-mockframe)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-blue.svg)](http://typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
