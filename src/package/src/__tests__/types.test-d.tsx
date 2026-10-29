@@ -16,6 +16,10 @@ expectTypeOf<DeviceColor<'iPhone 17'>>().toEqualTypeOf<
 expectTypeOf<DeviceColor<'iPhone 18 Pro'>>().toEqualTypeOf<
   'black' | 'silver' | 'glacier' | 'burgundy' | 'gold' | 'natural-titanium'
 >()
+expectTypeOf<DeviceColor<'iPhone 17 Pro Max'>>().toEqualTypeOf<'silver' | 'cosmic-orange' | 'deep-blue'>()
+expectTypeOf<DeviceColor<'iPhone 18 Pro Max'>>().toEqualTypeOf<'black' | 'silver' | 'glacier' | 'burgundy'>()
+expectTypeOf<DeviceColor<'iPhone Air'>>().toEqualTypeOf<'space-black' | 'cloud-white' | 'light-gold' | 'sky-blue'>()
+expectTypeOf<DeviceColor<'iPhone 12 mini'>>().toEqualTypeOf<'white'>()
 
 /* ---- Valid usages (must compile) ----
  * Written as JSX because object-literal assignment is too lenient against the
@@ -33,6 +37,9 @@ export const v7 = <MockFrame device="iPhone 17" color="sage" ref={createRef<HTML
 export const v8 = <MockFrame device="iPhone Duo" color="night-sky" pose="half-open" />
 export const v9 = <MockFrame device="iPhone Duo" color="star-white" pose="open" landscape={false} />
 export const v10 = <MockFrame device="iPhone Duo" color="night-sky" />
+export const v11 = <MockFrame device="iPhone 18 Pro Max" color="glacier" landscape />
+export const v12 = <MockFrame device="iPhone Air" color="sky-blue" />
+export const v13 = <MockFrame device="iPhone 12 mini" color="white" hideNotch />
 
 /* ---- Invalid usages: each MUST error, or the @ts-expect-error fails the build ---- */
 // @ts-expect-error iPhone X has no color variants
@@ -51,3 +58,5 @@ export const x7 = <MockFrame device="iPhone 17" color="black" pose="open" />
 export const x8 = <MockFrame device="iPhone Duo" color="night-sky" pose="flat" />
 // @ts-expect-error 'cosmic-orange' is an iPhone 17 colour, not an iPhone 18 Pro one
 export const x6 = <MockFrame device="iPhone 18 Pro" color="cosmic-orange" />
+// @ts-expect-error the iPhone 12 mini frame has no landscape variant
+export const x9 = <MockFrame device="iPhone 12 mini" color="white" landscape />

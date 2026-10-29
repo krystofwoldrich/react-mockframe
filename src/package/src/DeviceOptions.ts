@@ -65,6 +65,35 @@ export const DeviceOptions = {
         width: 402,
         height: 874,
     }),
+    ['iPhone 17 Pro Max']: defineDevice({
+        device: 'iphone17promax',
+        colors: ['silver', 'cosmic-orange', 'deep-blue'] as const,
+        hasLandscape: true,
+        width: 440,
+        height: 956,
+    }),
+    ['iPhone 18 Pro Max']: defineDevice({
+        device: 'iphone18promax',
+        colors: ['black', 'silver', 'glacier', 'burgundy'] as const,
+        hasLandscape: true,
+        width: 440,
+        height: 956,
+    }),
+    ['iPhone Air']: defineDevice({
+        device: 'iphone-air',
+        colors: ['space-black', 'cloud-white', 'light-gold', 'sky-blue'] as const,
+        hasLandscape: true,
+        width: 420,
+        height: 912,
+    }),
+    ['iPhone 12 mini']: defineDevice({
+        device: 'iphone12mini',
+        // Apple's iPhone 12 bezels only include the white iPhone 12 mini
+        colors: ['white'] as const,
+        hasLandscape: false,
+        width: 360,
+        height: 780,
+    }),
     ['iPhone Duo']: defineDevice({
         device: 'iphone-duo',
         colors: ['night-sky', 'star-white'] as const,

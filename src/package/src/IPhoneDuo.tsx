@@ -14,6 +14,8 @@
 
 import * as React from 'react'
 
+import { DUO_SCREEN_SHAPES, screenShapeStyle } from './ScreenShape'
+
 export type DuoPose = 'closed' | 'half-open' | 'open'
 
 type Size = { sw: number, sh: number }
@@ -111,7 +113,10 @@ function DuoDevice({ inner, sw, sh, rotated, hideCamera, duplicate, half, childr
       <div className="duo-btn duo-btn--side" />
       <div className="duo-btn duo-btn--vol-up" />
       <div className="duo-btn duo-btn--vol-down" />
-      <div className="screen" style={{ width: sw, height: sh }}>
+      <div
+        className="screen"
+        style={{ width: sw, height: sh, ...screenShapeStyle(inner ? DUO_SCREEN_SHAPES.inner : DUO_SCREEN_SHAPES.outer) }}
+      >
         <div
           className="duo-content"
           ref={duplicate ? setInert : undefined}

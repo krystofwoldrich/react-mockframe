@@ -14,8 +14,9 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 
 ## Features
 
-- **12 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 17, iPhone 18 Pro, iPhone Duo (foldable), Pixel 10, Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
-- **Measured, Not Eyeballed** - iPhone 17, iPhone 18 Pro, iPhone Duo, iPad Pro and MacBook Pro frames are measured from Apple's official product bezels (99.8% shape match): real screen sizes, corner radii, bezels, Dynamic Island and button positions, with frame colours sampled per finish
+- **16 Devices** - iPhone 8/8 Plus, iPhone X, iPhone 12 mini, iPhone 17, iPhone 17 Pro Max, iPhone 18 Pro, iPhone 18 Pro Max, iPhone Air, iPhone Duo (foldable), Pixel 10, Galaxy S25, iPad Mini, iPad Pro, MacBook Pro 2020, MacBook Pro
+- **Measured, Not Eyeballed** - iPhone 12 mini, 17, 17 Pro Max, 18 Pro, 18 Pro Max, Air, Duo, iPad Pro and MacBook Pro frames are measured from Apple's official product bezels (99.8% shape match): real screen sizes, corner radii, bezels, Dynamic Island, notch and button positions, with frame colours sampled per finish
+- **Real Screen Shapes** - Apple-frame screens use superellipse corners fitted to the bezels, not a circular `border-radius`. On the iPhone 12 mini, 17, 18 Pro, 17 Pro Max, 18 Pro Max and Air, the body and band follow the screen corner too, so the black border has one width all around
 - **Multiple Color Variants** - Authentic device colors for each model
 - **Landscape Mode** - Rotate phones and tablets
 - **Notch/Dynamic Island Toggle** - Show or hide notches
@@ -32,8 +33,12 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 | iPhone X | - | Yes | Notch |
 | iPhone 8 | black, silver, gold | Yes | - |
 | iPhone 8 Plus | black, silver, gold | Yes | - |
+| iPhone 12 mini | white | - | Notch |
 | iPhone 17 | black, white, mist-blue, sage, lavender, cosmic-orange, deep-blue | Yes | Dynamic Island |
+| iPhone 17 Pro Max | silver, cosmic-orange, deep-blue | Yes | Dynamic Island |
 | iPhone 18 Pro | black, silver, glacier, burgundy, gold, natural-titanium | Yes | Dynamic Island |
+| iPhone 18 Pro Max | black, silver, glacier, burgundy | Yes | Dynamic Island |
+| iPhone Air | space-black, cloud-white, light-gold, sky-blue | Yes | Dynamic Island |
 | iPhone Duo | night-sky, star-white | Yes | Camera (3 fold poses) |
 | Pixel 10 | obsidian, frost, indigo, lemongrass | Yes | - |
 | Galaxy S25 | blue-black, icy-blue, navy, mint, silver-shadow, coral-red, pink-gold | Yes | - |
@@ -42,7 +47,7 @@ Built and maintained by [Matter Development](https://matterdevelopment.com/?utm_
 | MacBook Pro 2020 | - | - | - |
 | MacBook Pro | space-black, silver | - | Notch |
 
-Default screen sizes (CSS px) match each device's real viewport: iPhone 17 / 18 Pro 402×874, Pixel 10 412×924, Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
+Default screen sizes (CSS px) match each device's real viewport: iPhone 12 mini 360×780, iPhone 17 / 18 Pro 402×874, iPhone 17 Pro Max / 18 Pro Max 440×956, iPhone Air 420×912, Pixel 10 412×924, Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
 
 `gold` and `natural-titanium` are not iPhone 18 Pro finishes (Apple sells Black, Silver, Glacier and Burgundy). `gold` is Apple's iPhone Air Light Gold applied to the 18 Pro's satin aluminium, and `natural-titanium` is sampled from Apple's iPhone 16 Pro Natural Titanium. Older colour names stay accepted for compatibility: `space-gray` (iPad Pro, MacBook Pro), `porcelain` / `mint` / `rose` (Pixel 10), `phantom-black` / `silver` (Galaxy S25).
 

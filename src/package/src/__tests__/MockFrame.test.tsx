@@ -1,8 +1,13 @@
 import { createRef } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { MockFrame, CustomMockFrame } from '../MockFrame'
+import { MockFrame, CustomMockFrame, DeviceOptions } from '../MockFrame'
 import type { MockFrameProps } from '../MockFrame'
+import {
+  DUO_SCREEN_SHAPES, FRAME_BANDS, SCREEN_SHAPES, bodyCornerPaths, screenMaskSvg, screenShapeStyle,
+} from '../ScreenShape'
 
 describe('MockFrame className/style merging', () => {
   it('keeps device classes when a custom className is provided', () => {
@@ -128,5 +133,120 @@ describe('iPhone Duo', () => {
   it('does not leak the pose prop to the DOM', () => {
     const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
     expect(container.firstChild).not.toHaveAttribute('pose')
+  })
+})
+
+describe('superellipse screen shapes', () => {
+  it('replaces the circular screen radius on frames measured from Apple bezels', () => {
+    for (const props of [
+      { device: 'iPhone X' },
+      { device: 'iPhone 17', color: 'black' },
+      { device: 'iPhone 18 Pro', color: 'silver' },
+      { device: 'iPad Pro', color: 'silver' },
+    ] as MockFrameProps[]) {
+      const { container, unmount } = render(<MockFrame {...props} />)
+      expect((container.querySelector('.screen') as HTMLElement).style.borderRadius).toBe('0px')
+      unmount()
+    }
+  })
+
+  it('leaves frames without a measured shape unchanged', () => {
+    const { container } = render(<MockFrame device="iPhone 8" color="black" />)
+    expect(container.querySelector('.screen')).not.toHaveAttribute('style')
+  })
+
+  it('shapes both iPhone Duo displays', () => {
+    const { container, rerender } = render(<MockFrame device="iPhone Duo" color="night-sky" />)
+    expect((container.querySelector('.duo-outer .screen') as HTMLElement).style.borderRadius).toBe('0px')
+    rerender(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
+    expect((container.querySelector('.duo-inner .screen') as HTMLElement).style.borderRadius).toBe('0px')
+  })
+
+  it('builds a stretching SVG mask with one nub per corner', () => {
+    const style = screenShapeStyle(SCREEN_SHAPES['iPhone 17']!)
+    expect(style.maskImage).toMatch(/^url\("data:image\/svg\+xml,/)
+    expect(style.WebkitMaskImage).toBe(style.maskImage)
+    expect(style.maskSize).toBe('100% 100%')
+    const svg = screenMaskSvg(DUO_SCREEN_SHAPES.outer)
+    expect(svg.match(/<path /g)).toHaveLength(4)
+    // The Duo outer display has small corners on the hinge side and large ones on the other
+    expect(svg).toContain('M 0.00,9.57')
+    expect(svg).toContain('M 0.00,70.55')
+  })
+})
+
+describe('superellipse body and band', () => {
+  it('draws the body and band as an SVG on the band frames', () => {
+    const { container } = render(<MockFrame device="iPhone 17" color="black" />)
+    const frame = container.firstElementChild as HTMLElement
+    expect(frame).toHaveClass('superellipse-body')
+    const svg = frame.querySelector(':scope > svg.body')!
+    // One layer per band ring plus the glass glow, each with four corners
+    expect(svg.querySelectorAll('g[mask] > g')).toHaveLength(13)
+    expect(svg.querySelectorAll('g[mask] path')).toHaveLength(13 * 4)
+    // The mask ids are unique per frame
+    const { container: second } = render(<MockFrame device="iPhone 17" color="black" />)
+    expect(second.querySelector('mask')!.id).not.toBe(svg.querySelector('mask')!.id)
+  })
+
+  it('leaves the CSS body on frames without a band', () => {
+    for (const props of [{ device: 'iPhone X' }, { device: 'iPad Pro', color: 'silver' }] as MockFrameProps[]) {
+      const { container, unmount } = render(<MockFrame {...props} />)
+      expect(container.firstElementChild).not.toHaveClass('superellipse-body')
+      expect(container.querySelector('svg.body')).toBeNull()
+      unmount()
+    }
+  })
+
+  it('starts the body corner where the screen corner starts, one glass border further out', () => {
+    // The top-left body corner of the iPhone 17 begins on the left edge, 14.33 + 77.43 px down
+    const paths = bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, [14.67, 14.33], 0)
+    expect(paths.topLeft).toMatch(/^M 0\.00,91\.76 /)
+    // A ring 2 px in starts on the line x = 2
+    expect(bodyCornerPaths(SCREEN_SHAPES['iPhone 17']!, [14.67, 14.33], 2).topLeft).toMatch(/^M 2\.00,91\.76 /)
+  })
+
+  it('matches the padding and band rings in mockframe.css', () => {
+    const css = readFileSync(resolve(__dirname, '../../css/mockframe.css'), 'utf8')
+    for (const [name, band] of Object.entries(FRAME_BANDS)) {
+      const cls = DeviceOptions[name as keyof typeof DeviceOptions].device
+      const start = css.indexOf(`&.${cls} {`)
+      const block = css.slice(start, css.indexOf('.screen', start))
+      const padding = block.match(/padding: ([\d.]+)px ([\d.]+)px/)!.slice(1).map(Number)
+      expect(padding, name).toEqual(band!.padding)
+      const rings = [...block.matchAll(/inset 0 0 0 ([\d.]+)px var\(--mf-b\d+\)/g)].map((m) => Number(m[1]))
+      expect(rings, name).toEqual(band!.rings)
+      const glass = block.match(/inset 0 0 ([\d.]+)px ([\d.]+)px var\(--mf-glass\)/)
+      expect(glass && { spread: Number(glass[2]), blur: Number(glass[1]) }, name).toEqual(band!.glass ?? null)
+    }
+  })
+})
+
+describe('iPhone 17 Pro Max, 18 Pro Max, Air and 12 mini', () => {
+  it('render their device class, a Dynamic Island and a superellipse screen', () => {
+    for (const props of [
+      { device: 'iPhone 17 Pro Max', color: 'cosmic-orange', cls: 'iphone17promax' },
+      { device: 'iPhone 18 Pro Max', color: 'glacier', cls: 'iphone18promax' },
+      { device: 'iPhone Air', color: 'sky-blue', cls: 'iphone-air' },
+    ]) {
+      const { cls, ...frameProps } = props
+      const { container, unmount } = render(<MockFrame {...(frameProps as MockFrameProps)} />)
+      expect(container.firstChild).toHaveClass('mockframe', cls, props.color)
+      expect(container.querySelector('.dynamic-island .camera')).not.toBeNull()
+      expect(container.querySelector('.action')).not.toBeNull()
+      expect((container.querySelector('.screen') as HTMLElement).style.borderRadius).toBe('0px')
+      unmount()
+    }
+  })
+
+  it('renders the iPhone 12 mini notch with speaker and camera at the 360x780 screen size', () => {
+    const { container, rerender } = render(<MockFrame device="iPhone 12 mini" color="white" />)
+    const root = container.firstChild as HTMLElement
+    expect(root).toHaveClass('mockframe', 'iphone12mini', 'white')
+    expect(DeviceOptions['iPhone 12 mini']).toMatchObject({ width: 360, height: 780 })
+    expect(container.querySelector('.notch .speaker')).not.toBeNull()
+    expect(container.querySelector('.notch .camera')).not.toBeNull()
+    rerender(<MockFrame device="iPhone 12 mini" color="white" hideNotch />)
+    expect(container.querySelector('.notch')).toBeNull()
   })
 })

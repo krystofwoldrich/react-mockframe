@@ -333,7 +333,11 @@ function MockAppScreen({ device, landscape, deviceWidth, deviceHeight }: {
 }
 
 // Devices that have a notch or dynamic island
-const devicesWithNotch: DeviceName[] = ['iPhone X', 'iPhone 17', 'iPhone 18 Pro', 'iPhone Duo', 'MacBook Pro']
+const devicesWithNotch: DeviceName[] = [
+  'iPhone X', 'iPhone 12 mini', 'iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air', 'iPhone Duo',
+  'MacBook Pro',
+]
+const devicesWithDynamicIsland: DeviceName[] = ['iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air']
 
 // iPhone Duo poses: label, natural orientation, and the framed size (screen + bezels) for auto-zoom
 type DuoPose = 'closed' | 'half-open' | 'open'
@@ -826,7 +830,7 @@ export default function MockFrameDemo() {
                 className="block text-sm font-medium mb-3"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                {isDuo ? 'Camera' : device === 'iPhone 17' || device === 'iPhone 18 Pro' ? 'Dynamic Island' : 'Notch'}
+                {isDuo ? 'Camera' : devicesWithDynamicIsland.includes(device) ? 'Dynamic Island' : 'Notch'}
               </label>
               <div className="flex gap-2">
                 {[

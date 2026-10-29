@@ -31,6 +31,8 @@ import type {
 import { DeviceOptions, DeviceNames } from './DeviceOptions'
 import { DuoFrame } from './IPhoneDuo'
 import type { DuoPose } from './IPhoneDuo'
+import { SCREEN_SHAPES, FRAME_BANDS, screenShapeStyle } from './ScreenShape'
+import { FrameBody } from './FrameBody'
 
 /* =============================================================================
    RE-EXPORTS
@@ -113,8 +115,9 @@ const OverflowShadows = () => (
 )
 
 /**
- * Dynamic Island + Action button shared by the iPhone 17 and iPhone 18 Pro.
- * The side and volume buttons reuse the common `.sleep` / `.volume` elements.
+ * Dynamic Island + Action button shared by the iPhone 17, 17 Pro Max, 18 Pro,
+ * 18 Pro Max and Air. The side and volume buttons reuse the common `.sleep` /
+ * `.volume` elements.
  */
 const DynamicIslandAnatomy = ({ hideNotch }: { hideNotch?: boolean }) => (
   <>
@@ -146,6 +149,25 @@ const DeviceAnatomy: Partial<Record<DeviceName, (hideNotch?: boolean) => React.R
   'iPhone 17': (hideNotch) => <DynamicIslandAnatomy hideNotch={hideNotch} />,
 
   'iPhone 18 Pro': (hideNotch) => <DynamicIslandAnatomy hideNotch={hideNotch} />,
+
+  'iPhone 17 Pro Max': (hideNotch) => <DynamicIslandAnatomy hideNotch={hideNotch} />,
+
+  'iPhone 18 Pro Max': (hideNotch) => <DynamicIslandAnatomy hideNotch={hideNotch} />,
+
+  'iPhone Air': (hideNotch) => <DynamicIslandAnatomy hideNotch={hideNotch} />,
+
+  // Notch with speaker and front camera; `.action` is the ring/silent switch
+  'iPhone 12 mini': (hideNotch) => (
+    <>
+      {!hideNotch && (
+        <div className="notch">
+          <div className="speaker" />
+          <div className="camera" />
+        </div>
+      )}
+      <div className="action" />
+    </>
+  ),
 
   'iPad Pro': () => (
     <>
@@ -455,12 +477,20 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   }
 
   // Build CSS class string for device styling
+  // Superellipse screen corners for the frames measured from Apple's bezels, and
+  // for the band frames also a body and band that follow the screen corners
+  const screenShape = SCREEN_SHAPES[device]
+  const band = screenShape && FRAME_BANDS[device]
+
   const className = cx(
-    'mockframe', config.device, color, isLandscape && 'landscape', userClassName
+    'mockframe', config.device, color, isLandscape && 'landscape', band && 'superellipse-body', userClassName
   )
 
   return (
     <div ref={ref} className={className} {...divProps} style={{ ...style, ...userStyle }}>
+      {/* Superellipse body and band (replaces the CSS body and band) */}
+      {screenShape && band && <FrameBody shape={screenShape} band={band} landscape={isLandscape} />}
+
       {/* Inner bezel layer */}
       <div className="inner" />
 
@@ -485,7 +515,7 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
       <div className="inner-shadow" />
 
       {/* Screen content area */}
-      <div className="screen">{children}</div>
+      <div className="screen" style={screenShape && screenShapeStyle(screenShape)}>{children}</div>
 
       {/* Home button (for devices that have one) */}
       <div className="home" />
