@@ -20,18 +20,22 @@ follow Apple's real screen shapes and adds more devices.
   displays. The shape is a CSS mask on the screen, so it scales with the frame.
 - **Superellipse bodies.** Apple's outer body is the screen curve moved outward by the black border (within
   0.13–0.41 pt RMS on Apple's bezels). On the band frames (iPhone 12 mini, 17, 17 Pro Max, 18 Pro, 18 Pro Max,
-  Air, Duo and iPad Pro), the body, glass glow and band rings are now drawn as an SVG of these offset curves.
-  The black border keeps one width around the corner: on the iPhone 18 Pro it changes by 0.11 pt, before
-  1.47 pt with a circular body around a superellipse screen. The CSS-only frames keep the circular body as a
-  fallback.
+  Air, Duo and iPad Pro), the body, glass glow and band rings are now drawn as layers masked to these offset
+  curves. The black border keeps one width around the corner: on the iPhone 18 Pro it changes by 0.11 pt,
+  before 1.47 pt with a circular body around a superellipse screen. The CSS-only frames keep the circular body
+  as a fallback.
+- **Exportable.** The masks are self-contained data URIs with no `url(#id)` references, so image exporters such
+  as html-to-image render the superellipse screens, bodies and bands.
 - **New Apple frames**, measured from Apple's bezels: iPhone 17 Pro Max, iPhone 18 Pro Max, iPhone Air and
   iPhone 12 mini.
 - **New Google frames**: Pixel 9 Pro, Pixel 10 Pro, Pixel 9 Pro Fold and Pixel 10 Pro Fold (closed and open
   poses). Sizes come from Google's specs, the devices' Android display configs (screen corner radius, camera
   cut-out, density) and Chrome DevTools. Body corners, buttons and hinge marks are measured on Google's
   renders, and the frame colours are Google Store swatches.
-- **Demo site**: pose controls for the Pixel Folds, the new devices and colours, and an expo.dev screenshot
-  on the iPhone 18 Pro.
+- **Demo site**: a full-screen playground with the device in the middle and a sidebar with all frames, listed
+  by platform (iOS, Android, macOS), device options (colour, fold pose, orientation, notch, scale), a
+  screenshot upload (an expo.dev screenshot shows until you upload one), export to PNG or WebP, and the code
+  snippet.
 
 ## Features
 

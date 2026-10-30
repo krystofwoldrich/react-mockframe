@@ -1,14 +1,58 @@
-import { useState, useMemo, useRef, useEffect, useCallback, useLayoutEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { MockFrame, DeviceNames, DeviceOptions } from 'react-mockframe'
-import type { DeviceName } from 'react-mockframe'
-import { Smartphone, Upload, Download, RotateCcw, ZoomIn, Move, Globe, Image as ImageIcon, Palette, Sparkles, Eye, EyeOff, ChevronDown, Check, BadgeCheck } from 'lucide-react'
-import iosScreenshot from '../assets/ios.webp'
-import iphone18ProScreenshot from '../assets/iphone-18-pro.webp'
-import androidScreenshot from '../assets/android.webp'
-import ipadScreenshot from '../assets/ipad-pro.webp'
-import macosScreenshot from '../assets/macos.webp'
+import type { DeviceName, MockFrameProps } from 'react-mockframe'
+import { Smartphone, Upload, Download, RotateCcw, Move, ChevronDown, Check, Copy, Trash2 } from 'lucide-react'
 import { toPng } from 'html-to-image'
+import defaultScreenshot from '../assets/default-screenshot.webp'
+
+/* -----------------------------------------------------------------------------
+   Device lists
+   ----------------------------------------------------------------------------- */
+
+// Apple and Android logos from the standalone view design (16x16 boxes around the original paths)
+const APPLE_PATH = 'M37.6316 431.569C37.4205 432.057 37.1707 432.506 36.8812 432.918C36.4866 433.481 36.1636 433.87 35.9146 434.087C35.5286 434.442 35.1151 434.623 34.6723 434.634C34.3544 434.634 33.971 434.543 33.5247 434.36C33.077 434.177 32.6655 434.087 32.2893 434.087C31.8947 434.087 31.4715 434.177 31.0189 434.36C30.5655 434.543 30.2003 434.639 29.9211 434.648C29.4965 434.666 29.0732 434.48 28.6507 434.087C28.381 433.851 28.0437 433.448 27.6397 432.877C27.2062 432.267 26.8497 431.56 26.5705 430.753C26.2715 429.882 26.1216 429.039 26.1216 428.222C26.1216 427.287 26.3237 426.48 26.7285 425.804C27.0467 425.261 27.47 424.833 27.9997 424.518C28.5295 424.204 29.1019 424.044 29.7183 424.033C30.0556 424.033 30.4979 424.138 31.0475 424.343C31.5957 424.549 31.9476 424.653 32.1019 424.653C32.2172 424.653 32.6082 424.531 33.271 424.288C33.8977 424.062 34.4267 423.969 34.8601 424.006C36.0343 424.1 36.9165 424.563 37.5032 425.397C36.453 426.034 35.9335 426.925 35.9439 428.068C35.9534 428.959 36.2764 429.7 36.9114 430.288C37.1991 430.561 37.5205 430.772 37.878 430.922C37.8005 431.147 37.7186 431.363 37.6316 431.569V431.569ZM34.9385 420.972C34.9385 421.67 34.6835 422.321 34.1752 422.925C33.5617 423.642 32.8198 424.056 32.0152 423.991C32.005 423.907 31.999 423.819 31.999 423.726C31.999 423.056 32.2907 422.339 32.8088 421.753C33.0674 421.456 33.3963 421.209 33.7952 421.012C34.1932 420.818 34.5697 420.711 34.9238 420.692C34.9342 420.786 34.9385 420.879 34.9385 420.972V420.972Z'
+const ANDROID_PATH = 'M35.375 517.049C35.0382 517.049 34.7643 516.774 34.7643 516.436C34.7643 516.098 35.0382 515.823 35.375 515.823C35.7118 515.823 35.9857 516.098 35.9857 516.436C35.9857 516.774 35.7118 517.049 35.375 517.049ZM28.6246 517.049C28.2879 517.049 28.0139 516.774 28.0139 516.436C28.0139 516.098 28.2879 515.823 28.6246 515.823C28.9614 515.823 29.2353 516.098 29.2353 516.436C29.2353 516.774 28.9614 517.049 28.6246 517.049ZM35.594 513.358L36.8146 511.237C36.8846 511.115 36.843 510.96 36.7217 510.889C36.6004 510.819 36.445 510.861 36.3748 510.983L35.1389 513.13C34.1939 512.697 33.1324 512.456 31.9998 512.456C30.8672 512.456 29.8058 512.697 28.8607 513.13L27.6248 510.983C27.5547 510.861 27.3993 510.819 27.278 510.889C27.1567 510.96 27.1148 511.115 27.185 511.237L28.4056 513.358C26.3097 514.502 24.8762 516.63 24.6665 519.145H39.3331C39.1232 516.63 37.6898 514.502 35.594 513.358Z'
+
+const AppleLogo = () => (
+  <svg width="16" height="16" viewBox="24 419.67 16 16" aria-hidden="true" className="flex-shrink-0">
+    <path d={APPLE_PATH} fill="currentColor" />
+  </svg>
+)
+
+const AndroidLogo = () => (
+  <svg width="16" height="16" viewBox="24 507 16 16" aria-hidden="true" className="flex-shrink-0">
+    <path d={ANDROID_PATH} fill="currentColor" />
+  </svg>
+)
+
+type Platform = 'ios' | 'android' | 'macos'
+
+// Newest first within each platform
+const platformDevices: Record<Platform, DeviceName[]> = {
+  ios: [
+    'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Duo', 'iPhone Air', 'iPhone 17 Pro Max', 'iPhone 17',
+    'iPhone 12 mini', 'iPhone X', 'iPhone 8 Plus', 'iPhone 8', 'iPad Pro', 'iPad Mini',
+  ],
+  android: ['Pixel 10 Pro', 'Pixel 10 Pro Fold', 'Pixel 10', 'Pixel 9 Pro', 'Pixel 9 Pro Fold', 'Galaxy S25'],
+  macos: ['MacBook Pro', 'MacBook Pro 2020'],
+}
+
+// Any device added to the library later still shows up, at the end of its platform list
+const listed = new Set(Object.values(platformDevices).flat())
+for (const name of DeviceNames.filter((d) => !listed.has(d))) {
+  const platform: Platform = /pixel|galaxy/i.test(name) ? 'android' : /macbook/i.test(name) ? 'macos' : 'ios'
+  platformDevices[platform].push(name)
+}
+
+const platforms: { key: Platform, title: string, Logo: () => React.JSX.Element }[] = [
+  { key: 'ios', title: 'iOS', Logo: AppleLogo },
+  { key: 'android', title: 'Android', Logo: AndroidLogo },
+  { key: 'macos', title: 'macOS', Logo: AppleLogo },
+]
+
+/* -----------------------------------------------------------------------------
+   Device data for the controls
+   ----------------------------------------------------------------------------- */
 
 const colorMap: Record<string, string> = {
   'black': '#2c2b2c',
@@ -50,181 +94,148 @@ const colorMap: Record<string, string> = {
   'silver-shadow': '#a7a8ab',
   'coral-red': '#ea646b',
   'pink-gold': '#e8d7cd',
+  // iPhone Air colors (a mid band ring of each finish)
+  'cloud-white': '#eae9e9',
+  'light-gold': '#e4ddcb',
+  'sky-blue': '#d2e0eb',
 }
+
 
 function getColorHex(color: string): string {
   return colorMap[color.toLowerCase()] || '#888888'
 }
 
-// Custom Select Component
-interface SelectOption {
-  value: string
-  label: string
+const colorLabel = (c: string) => c.split('-').map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ')
+
+// Devices that have a notch, a Dynamic Island or a camera that can be hidden
+const devicesWithNotch: DeviceName[] = [
+  'iPhone X', 'iPhone 12 mini', 'iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air', 'iPhone Duo',
+  'MacBook Pro',
+]
+const devicesWithDynamicIsland: DeviceName[] = ['iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air']
+
+// iPhone Duo poses: label, natural orientation, and the framed size (screen + bezels) for auto-zoom
+type DuoPose = 'closed' | 'half-open' | 'open'
+const duoPoses: { value: DuoPose, label: string, landscape: boolean, size: [number, number] }[] = [
+  { value: 'closed', label: 'Closed', landscape: false, size: [508, 710] },
+  { value: 'half-open', label: 'Half-open', landscape: true, size: [993, 787] },
+  { value: 'open', label: 'Open', landscape: true, size: [992, 710] },
+]
+
+// Pixel Pro Fold poses and their screen sizes (closed is the device's default size)
+const pixelFolds: DeviceName[] = ['Pixel 10 Pro Fold', 'Pixel 9 Pro Fold']
+const pixelFoldPoses: { value: DuoPose, label: string }[] = [
+  { value: 'closed', label: 'Closed' },
+  { value: 'open', label: 'Open' },
+]
+const PIXEL_FOLD_INNER: [number, number] = [852, 883]
+
+// Older colour names the library still accepts for compatibility; hidden from the picker
+const legacyColors: Partial<Record<DeviceName, readonly string[]>> = {
+  'iPad Pro': ['space-gray'],
+  'MacBook Pro': ['space-gray'],
+  'Pixel 10': ['porcelain', 'mint', 'rose'],
+  'Galaxy S25': ['phantom-black', 'silver'],
 }
 
-function CustomSelect({
-  value,
-  onChange,
-  options,
-  placeholder = 'Select...',
-}: {
-  value: string
-  onChange: (value: string) => void
-  options: SelectOption[]
-  placeholder?: string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+const zoomPresets = [
+  { value: 'auto', label: 'Auto' },
+  { value: '0.5', label: '50%' },
+  { value: '0.75', label: '75%' },
+  { value: '1', label: '100%' },
+]
 
-  // Calculate dropdown position and scroll to selected item
-  useLayoutEffect(() => {
-    if (isOpen && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect()
-      setDropdownPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      })
+const solidColors = ['#000000', '#ffffff', '#1a1a2e', '#f5f5f5', '#0f172a', '#fef3c7']
+const gradientPresets = [
+  { name: 'Purple', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { name: 'Sunset', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+  { name: 'Ocean', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { name: 'Forest', value: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+  { name: 'Night', value: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%)' },
+  { name: 'Warm', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+]
 
-      // Scroll to selected item after dropdown renders
-      requestAnimationFrame(() => {
-        if (dropdownRef.current) {
-          const selectedItem = dropdownRef.current.querySelector('[data-selected="true"]')
-          if (selectedItem) {
-            selectedItem.scrollIntoView({ block: 'center' })
-          }
-        }
-      })
-    }
-  }, [isOpen])
+/* -----------------------------------------------------------------------------
+   Sidebar building blocks (styled after the standalone view design)
+   ----------------------------------------------------------------------------- */
 
-  // Close on click outside
-  useEffect(() => {
-    if (!isOpen) return
-
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node
-      if (
-        triggerRef.current && !triggerRef.current.contains(target) &&
-        dropdownRef.current && !dropdownRef.current.contains(target)
-      ) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen])
-
-  // Close on scroll (but not when scrolling inside dropdown)
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handleScroll = (event: Event) => {
-      if (dropdownRef.current && dropdownRef.current.contains(event.target as Node)) {
-        return // Don't close if scrolling inside dropdown
-      }
-      setIsOpen(false)
-    }
-    window.addEventListener('scroll', handleScroll, true)
-    return () => window.removeEventListener('scroll', handleScroll, true)
-  }, [isOpen])
-
-  const selectedOption = options.find(opt => opt.value === value)
-
+function Section({ title, children, collapsible }: { title: string, children: React.ReactNode, collapsible?: boolean }) {
+  const [open, setOpen] = useState(true)
   return (
-    <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all text-left"
-        style={{
-          background: 'var(--color-bg-tertiary)',
-          border: isOpen ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
-          color: 'var(--color-text-primary)',
-          boxShadow: isOpen ? '0 0 0 3px var(--color-accent-subtle)' : 'none',
-        }}
-      >
-        <span>{selectedOption?.label || placeholder}</span>
-        <ChevronDown
-          className="w-4 h-4 transition-transform"
-          style={{
-            color: 'var(--color-text-tertiary)',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        />
-      </button>
-
-      {isOpen && createPortal(
-        <div
-          ref={dropdownRef}
-          className="py-1 rounded-xl overflow-hidden"
-          style={{
-            position: 'fixed',
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-            background: 'var(--color-bg-card)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 10px 40px var(--color-shadow)',
-            backdropFilter: 'blur(20px)',
-            maxHeight: '280px',
-            overflowY: 'auto',
-            zIndex: 99999,
-          }}
+    <section className="border-b border-[#ececef] px-4 py-4">
+      {collapsible ? (
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex w-full items-center justify-between text-[15px] font-medium text-[#1c2024]"
+          aria-expanded={open}
         >
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              data-selected={value === option.value}
-              onClick={() => {
-                onChange(option.value)
-                setIsOpen(false)
-              }}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-left"
-              style={{
-                background: value === option.value ? 'var(--color-accent-subtle)' : 'transparent',
-                color: value === option.value ? 'var(--color-accent)' : 'var(--color-text-primary)',
-              }}
-              onMouseEnter={(e) => {
-                if (value !== option.value) {
-                  e.currentTarget.style.background = 'var(--color-bg-tertiary)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (value !== option.value) {
-                  e.currentTarget.style.background = 'transparent'
-                }
-              }}
-            >
-              <span className="font-medium">{option.label}</span>
-              {value === option.value && (
-                <Check className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
-              )}
-            </button>
-          ))}
-        </div>,
-        document.body
+          {title}
+          <ChevronDown className={`h-4 w-4 text-[#60646c] transition-transform ${open ? '' : '-rotate-90'}`} />
+        </button>
+      ) : (
+        <h2 className="text-[15px] font-medium text-[#1c2024]">{title}</h2>
       )}
-    </div>
+      {open && <div className="mt-3">{children}</div>}
+    </section>
   )
 }
 
+/** A label with a compact dropdown on the right, like "Appearance  Dark ⌄" */
+function OptionRow({ label, value, options, onChange, swatch }: {
+  label: string
+  value: string
+  options: { value: string, label: string }[]
+  onChange: (value: string) => void
+  swatch?: string
+}) {
+  const current = options.find((o) => o.value === value)
+  return (
+    <label className="flex items-center justify-between gap-3 py-[9px]">
+      <span className="text-[15px] text-[#60646c]">{label}</span>
+      <span className="relative inline-flex h-8 items-center gap-1.5 rounded-md bg-[#f0f0f3] pl-2.5 pr-1.5 text-[15px] text-[#1c2024] hover:bg-[#e8e8ec]">
+        {swatch && (
+          <span className="h-3.5 w-3.5 rounded-full" style={{ background: swatch, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)' }} />
+        )}
+        <span className="whitespace-nowrap">{current?.label ?? value}</span>
+        <ChevronDown className="h-4 w-4 text-[#60646c]" />
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 cursor-pointer opacity-0"
+          aria-label={label}
+        >
+          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </span>
+    </label>
+  )
+}
+
+function SmallButton({ onClick, children, primary, disabled }: {
+  onClick: () => void
+  children: React.ReactNode
+  primary?: boolean
+  disabled?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-[14px] font-medium transition-colors disabled:opacity-50 ${
+        primary ? 'bg-[#1c2024] text-white hover:bg-[#2e3135]' : 'bg-[#f0f0f3] text-[#1c2024] hover:bg-[#e8e8ec]'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
+/* -----------------------------------------------------------------------------
+   Screen content
+   ----------------------------------------------------------------------------- */
+
 // Uploaded image content with drag-to-pan functionality
-function UploadedImageContent({
-  src,
-  zoom,
-  position,
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
-  isDragging,
-  background,
-}: {
+function UploadedImageContent({ src, zoom, position, onMouseDown, onMouseMove, onMouseUp, isDragging, background }: {
   src: string
   zoom: number
   position: { x: number; y: number }
@@ -236,12 +247,8 @@ function UploadedImageContent({
 }) {
   return (
     <div
-      className="w-full h-full flex items-center justify-center"
-      style={{
-        cursor: isDragging ? 'grabbing' : 'grab',
-        overflow: 'hidden',
-        background,
-      }}
+      className="flex h-full w-full items-center justify-center"
+      style={{ cursor: isDragging ? 'grabbing' : 'grab', overflow: 'hidden', background }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -265,122 +272,9 @@ function UploadedImageContent({
   )
 }
 
-// Get appropriate screenshot for device
-function getDeviceScreenshot(device: string): string {
-  const lowerDevice = device.toLowerCase()
-
-  // MacBooks
-  if (lowerDevice.includes('macbook')) {
-    return macosScreenshot
-  }
-
-  // iPads
-  if (lowerDevice.includes('ipad')) {
-    return ipadScreenshot
-  }
-
-  // Android devices
-  const androidDevices = ['pixel', 'galaxy', 'nexus', 'samsung', 'lumia']
-  if (androidDevices.some(d => lowerDevice.includes(d))) {
-    return androidScreenshot
-  }
-
-  // iPhone 18 Pro: expo.dev in Safari
-  if (device === 'iPhone 18 Pro') {
-    return iphone18ProScreenshot
-  }
-
-  // Default to iOS (iPhones)
-  return iosScreenshot
-}
-
-// Mock app screen with real screenshots
-function MockAppScreen({ device, landscape, deviceWidth, deviceHeight }: {
-  device: string
-  landscape?: boolean
-  deviceWidth?: number
-  deviceHeight?: number
-}) {
-  const screenshot = getDeviceScreenshot(device)
-
-  if (landscape && deviceWidth && deviceHeight) {
-    // In landscape mode, we create a rotated container that matches portrait dimensions,
-    // then rotate the whole thing. This ensures object-fit: cover works correctly.
-    return (
-      <div
-        className="w-full h-full overflow-hidden flex items-center justify-center"
-      >
-        <div
-          style={{
-            width: deviceWidth,
-            height: deviceHeight,
-            transform: 'rotate(-90deg)',
-            transformOrigin: 'center center',
-          }}
-        >
-          <img
-            src={screenshot}
-            alt={`${device} screenshot`}
-            draggable={false}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <img
-      src={screenshot}
-      alt={`${device} screenshot`}
-      className="w-full h-full object-cover"
-      draggable={false}
-    />
-  )
-}
-
-// Devices that have a notch or dynamic island
-const devicesWithNotch: DeviceName[] = [
-  'iPhone X', 'iPhone 12 mini', 'iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air', 'iPhone Duo',
-  'MacBook Pro',
-]
-const devicesWithDynamicIsland: DeviceName[] = ['iPhone 17', 'iPhone 17 Pro Max', 'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Air']
-
-// iPhone Duo poses: label, natural orientation, and the framed size (screen + bezels) for auto-zoom
-type DuoPose = 'closed' | 'half-open' | 'open'
-const duoPoses: { value: DuoPose, label: string, landscape: boolean, size: [number, number] }[] = [
-  { value: 'closed', label: 'Closed', landscape: false, size: [508, 710] },
-  { value: 'half-open', label: 'Half-open', landscape: true, size: [993, 787] },
-  { value: 'open', label: 'Open', landscape: true, size: [992, 710] },
-]
-
-// Pixel Pro Fold poses and their screen sizes (closed is the device's default size)
-const pixelFolds: DeviceName[] = ['Pixel 10 Pro Fold', 'Pixel 9 Pro Fold']
-const pixelFoldPoses: { value: DuoPose, label: string }[] = [
-  { value: 'closed', label: 'Closed' },
-  { value: 'open', label: 'Open' },
-]
-const PIXEL_FOLD_INNER: [number, number] = [852, 883]
-
-// Device picker order: newest and most-used first, legacy models last
-const deviceOrder: DeviceName[] = [
-  'iPhone 18 Pro', 'iPhone Duo', 'MacBook Pro', 'iPad Pro', 'iPhone 17',
-  'Pixel 10', 'Pixel 10 Pro', 'Pixel 10 Pro Fold', 'Pixel 9 Pro', 'Pixel 9 Pro Fold', 'Galaxy S25', 'iPad Mini', 'MacBook Pro 2020', 'iPhone X', 'iPhone 8', 'iPhone 8 Plus',
-]
-// Any device added to the library later still shows up, at the end
-const orderedDevices = [...deviceOrder, ...DeviceNames.filter((d) => !deviceOrder.includes(d))]
-
-// Older colour names the library still accepts for compatibility; hidden from the picker
-const legacyColors: Partial<Record<DeviceName, readonly string[]>> = {
-  'iPad Pro': ['space-gray'],
-  'MacBook Pro': ['space-gray'],
-  'Pixel 10': ['porcelain', 'mint', 'rose'],
-  'Galaxy S25': ['phantom-black', 'silver'],
-}
+/* -----------------------------------------------------------------------------
+   Page
+   ----------------------------------------------------------------------------- */
 
 export default function MockFrameDemo() {
   const [device, setDevice] = useState<DeviceName>('iPhone 18 Pro')
@@ -391,126 +285,81 @@ export default function MockFrameDemo() {
   const isDuo = device === 'iPhone Duo'
   const isPixelFold = pixelFolds.includes(device)
   const pixelFoldOpen = isPixelFold && pose === 'open'
-  const duoPose = duoPoses.find((p) => p.value === pose)!
+  const duoPose = duoPoses.find((p) => p.value === pose) ?? duoPoses[0]!
   const colors = deviceInfo.colors.filter((c) => !legacyColors[device]?.includes(c))
-  const [color, setColor] = useState(colors[0])
-  const [previewUrl, setPreviewUrl] = useState('')
-  const [activeUrl, setActiveUrl] = useState('')
-  const [contentMode, setContentMode] = useState<'demo' | 'url' | 'upload'>('demo')
+  const [color, setColor] = useState<string | undefined>(colors[0])
   const [copied, setCopied] = useState(false)
-
-  // Check if current device has a notch
   const deviceHasNotch = devicesWithNotch.includes(device)
 
-  // Image upload state
+  // Uploaded screenshot
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [imageZoom, setImageZoom] = useState(1)
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [isDropZoneActive, setIsDropZoneActive] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const deviceRef = useRef<HTMLDivElement>(null)
-  const previewContainerRef = useRef<HTMLDivElement>(null)
-
-  // Background options for uploaded images
   const [bgType, setBgType] = useState<'solid' | 'gradient'>('solid')
   const [bgColor, setBgColor] = useState('#000000')
-  const [bgGradient, setBgGradient] = useState('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')
+  const [bgGradient, setBgGradient] = useState(gradientPresets[0]!.value)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const deviceRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
 
-  // Preset gradients
-  const gradientPresets = [
-    { name: 'Purple', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-    { name: 'Sunset', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
-    { name: 'Ocean', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
-    { name: 'Forest', value: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
-    { name: 'Night', value: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%)' },
-    { name: 'Warm', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
-  ]
-
-  // Device zoom (for the frame itself)
+  // Device scale
   const [deviceZoom, setDeviceZoom] = useState<number | 'auto'>('auto')
   const [autoZoomValue, setAutoZoomValue] = useState(0.75)
-  const zoomPresets = [
-    { value: 'auto' as const, label: 'Auto' },
-    { value: 0.5, label: '50%' },
-    { value: 0.75, label: '75%' },
-    { value: 1, label: '100%' },
-  ]
 
-  // Calculate auto-fit zoom based on container and device dimensions
+  // Export
+  const [exportFormat, setExportFormat] = useState<'png' | 'webp'>('png')
+  const [isExporting, setIsExporting] = useState(false)
+
+  const selectDevice = (newDevice: DeviceName) => {
+    setDevice(newDevice)
+    if (newDevice === 'iPhone Duo') setLandscape(false)
+    if (newDevice === 'iPhone Duo' || pixelFolds.includes(newDevice)) setPose('closed')
+    const newColors = DeviceOptions[newDevice].colors.filter((c) => !legacyColors[newDevice]?.includes(c))
+    setColor(newColors[0])
+  }
+
+  // Auto-fit zoom from the canvas size and the device dimensions
   const calculateAutoZoom = useCallback(() => {
-    if (!previewContainerRef.current) return 0.75
-
-    const container = previewContainerRef.current
-    const containerWidth = container.clientWidth - 200 // Padding for sides
-    const containerHeight = container.clientHeight - 100 // Padding for top/bottom
+    const canvas = canvasRef.current
+    if (!canvas) return 0.75
+    const availableWidth = canvas.clientWidth - 160
+    const availableHeight = canvas.clientHeight - 120
 
     // The Duo's framed size depends on the pose (and turns with the orientation)
     if (isDuo) {
       const [w, h] = duoPose.size
       const turned = pose !== 'half-open' && landscape !== duoPose.landscape
       const [fw, fh] = turned ? [h, w] : [w, h]
-      // Same breathing room as the other phones
-      return Math.max(0.25, Math.min(1.5, Math.min(containerWidth / (fw * 1.3), containerHeight / (fh * 1.3))))
+      return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (fw * 1.1), availableHeight / (fh * 1.1))))
     }
 
-    // Get device dimensions (including frame chrome - roughly 20-30% extra)
     const [screenWidth, screenHeight] = pixelFoldOpen ? PIXEL_FOLD_INNER : [deviceInfo.width || 375, deviceInfo.height || 812]
     const deviceWidth = landscape ? screenHeight : screenWidth
     const deviceHeight = landscape ? screenWidth : screenHeight
-
-    // Device frames add significant chrome, estimate ~1.3x for phones, ~1.15x for laptops
-    const isLaptop = device.toLowerCase().includes('macbook')
-    const chromeMultiplier = isLaptop ? 1.15 : 1.35
-
-    const effectiveWidth = deviceWidth * chromeMultiplier
-    const effectiveHeight = deviceHeight * chromeMultiplier
-
-    // Calculate zoom to fit both dimensions
-    const zoomToFitWidth = containerWidth / effectiveWidth
-    const zoomToFitHeight = containerHeight / effectiveHeight
-
-    // Use the smaller zoom to ensure it fits both ways
-    const optimalZoom = Math.min(zoomToFitWidth, zoomToFitHeight)
-
-    // Clamp between 0.25 and 1.5
-    return Math.max(0.25, Math.min(1.5, optimalZoom))
+    // Frames add bezels and buttons around the screen
+    const chrome = device.toLowerCase().includes('macbook') ? 1.15 : 1.12
+    return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (deviceWidth * chrome), availableHeight / (deviceHeight * chrome))))
   }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose, pixelFoldOpen])
 
-  // Update auto zoom when container or device changes
   useEffect(() => {
     if (deviceZoom !== 'auto') return
-
-    const updateAutoZoom = () => {
-      const newZoom = calculateAutoZoom()
-      setAutoZoomValue(newZoom)
-    }
-
-    updateAutoZoom()
-
-    // Use ResizeObserver to track container size changes
-    const container = previewContainerRef.current
-    if (!container) return
-
-    const resizeObserver = new ResizeObserver(updateAutoZoom)
-    resizeObserver.observe(container)
-
-    return () => resizeObserver.disconnect()
+    const update = () => setAutoZoomValue(calculateAutoZoom())
+    update()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const observer = new ResizeObserver(update)
+    observer.observe(canvas)
+    return () => observer.disconnect()
   }, [deviceZoom, calculateAutoZoom])
 
-  // Get effective zoom value
   const effectiveZoom = deviceZoom === 'auto' ? autoZoomValue : deviceZoom
-
-  // Export state
-  const [exportFormat, setExportFormat] = useState<'png' | 'webp'>('png')
-  const [isExporting, setIsExporting] = useState(false)
 
   const codeSnippet = useMemo(() => {
     const props: string[] = [`device="${device}"`]
-    if (colors.length > 0 && color) {
-      props.push(`color="${color}"`)
-    }
+    if (colors.length > 0 && color) props.push(`color="${color}"`)
     if (isDuo) {
       if (pose !== 'closed') props.push(`pose="${pose}"`)
       if (pose !== 'half-open' && landscape !== duoPose.landscape) {
@@ -520,14 +369,8 @@ export default function MockFrameDemo() {
       if (pixelFoldOpen) props.push('pose="open"')
       if (deviceInfo.hasLandscape && landscape) props.push('landscape')
     }
-    if (deviceHasNotch && hideNotch) {
-      props.push('hideNotch')
-    }
-    return `<MockFrame
-  ${props.join('\n  ')}
->
-  <YourAppContent />
-</MockFrame>`
+    if (deviceHasNotch && hideNotch) props.push('hideNotch')
+    return `<MockFrame\n  ${props.join('\n  ')}\n>\n  <YourAppContent />\n</MockFrame>`
   }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose, pixelFoldOpen])
 
   const handleCopy = async () => {
@@ -541,67 +384,45 @@ export default function MockFrameDemo() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleLoadUrl = () => {
-    if (previewUrl) {
-      let url = previewUrl.trim()
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url
-      }
-      setActiveUrl(url)
-      setContentMode('url')
-    }
-  }
-
-  // Helper to process uploaded file
+  // Screenshot upload
   const processImageFile = (file: File) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setUploadedImage(event.target?.result as string)
-        setContentMode('upload')
-        setImageZoom(1)
-        setImagePosition({ x: 0, y: 0 })
-      }
-      reader.readAsDataURL(file)
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setUploadedImage(event.target?.result as string)
+      setImageZoom(1)
+      setImagePosition({ x: 0, y: 0 })
     }
+    reader.readAsDataURL(file)
   }
 
-  // Image upload handlers
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) processImageFile(file)
   }
 
-  // Drag & drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    e.stopPropagation()
     setIsDropZoneActive(true)
   }
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
-    e.stopPropagation()
     setIsDropZoneActive(false)
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    e.stopPropagation()
     setIsDropZoneActive(false)
-
     const file = e.dataTransfer.files?.[0]
     if (file) processImageFile(file)
   }
 
   const handleClearImage = () => {
     setUploadedImage(null)
-    setContentMode('demo')
     setImageZoom(1)
     setImagePosition({ x: 0, y: 0 })
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleResetZoomPan = () => {
@@ -609,41 +430,37 @@ export default function MockFrameDemo() {
     setImagePosition({ x: 0, y: 0 })
   }
 
-  // Drag handlers for pan
+  // Drag the uploaded image to reposition it
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (contentMode !== 'upload') return
     setIsDragging(true)
     setDragStart({ x: e.clientX - imagePosition.x, y: e.clientY - imagePosition.y })
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return
-    setImagePosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    })
+    setImagePosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
   }
 
   const handleMouseUp = () => setIsDragging(false)
 
-  // Export handler
   const handleExport = async () => {
     if (!deviceRef.current) return
+    // Render the frame at 100% (no scale transform, no animation) in a hidden wrapper, then capture it
     setIsExporting(true)
-
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
     try {
       // Always generate PNG first (supports transparency)
-      const pngDataUrl = await toPng(deviceRef.current, { pixelRatio: 2 })
-
+      const pngDataUrl = await toPng(deviceRef.current, {
+        pixelRatio: 2,
+        style: { opacity: '1' },
+      })
       let finalDataUrl = pngDataUrl
-      const finalFormat = exportFormat
 
       // Convert to WebP if requested (preserves transparency)
       if (exportFormat === 'webp') {
         const img = new Image()
         img.src = pngDataUrl
         await new Promise((resolve) => { img.onload = resolve })
-
         const canvas = document.createElement('canvas')
         canvas.width = img.width
         canvas.height = img.height
@@ -655,7 +472,7 @@ export default function MockFrameDemo() {
       }
 
       const link = document.createElement('a')
-      link.download = `device-mockup-${device.replace(/\s+/g, '-').toLowerCase()}.${finalFormat}`
+      link.download = `device-mockup-${device.replace(/\s+/g, '-').toLowerCase()}.${exportFormat}`
       link.href = finalDataUrl
       link.click()
     } catch (err) {
@@ -665,750 +482,251 @@ export default function MockFrameDemo() {
     }
   }
 
+  // The device is chosen at runtime, so its props are built as one object
+  const frameProps = {
+    device,
+    ...(colors.length > 0 ? { color } : {}),
+    landscape: deviceInfo.hasLandscape ? landscape : undefined,
+    ...(isDuo || isPixelFold ? { pose } : {}),
+  } as MockFrameProps
+
+  const onOff = [{ value: 'show', label: 'Show' }, { value: 'hide', label: 'Hide' }]
+  const showOrientation = deviceInfo.hasLandscape && !(isDuo && pose === 'half-open')
+
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="text-center max-w-2xl mx-auto">
-        <span
-          className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4"
-          style={{ background: 'var(--color-accent-subtle)', color: 'var(--color-accent)' }}
-        >
-          Core Component
-        </span>
-        <h1
-          className="text-4xl md:text-5xl mb-4 font-serif"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          MockFrame
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)' }} className="text-lg">
-          Showcase your app in beautiful, realistic device frames.
-          Perfect for portfolios, documentation, and marketing.
-        </p>
-        <a
-          href="https://developer.apple.com/design/resources/#product-bezels"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
-          style={{
-            background: 'var(--color-bg-card)',
-            border: '1px solid var(--color-border)',
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          <BadgeCheck className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-accent)' }} />
-          <span>
-            Measured against Apple's official product bezels
-            <span style={{ color: 'var(--color-text-secondary)' }}> · 99.8% match</span>
-          </span>
-        </a>
-      </div>
+    <div className="flex h-screen overflow-hidden bg-[#f9f9fb] text-[#1c2024]">
+      {/* Sidebar */}
+      <aside className="flex h-full w-[320px] flex-shrink-0 flex-col overflow-y-auto border-r border-[#ececef] bg-white">
+        <header className="flex h-[72px] flex-shrink-0 items-center gap-2 border-b border-[#ececef] px-4">
+          <Smartphone className="h-5 w-5" />
+          <span className="text-[20px] font-semibold tracking-tight">MockFrame</span>
+        </header>
 
-      <div className="flex gap-8 lg:flex-row flex-col">
-        {/* Controls Panel */}
-        <div className="space-y-4 lg:w-[340px] flex-shrink-0">
-          {/* Device Selection */}
-          <div className="glass-card p-5">
-            <label
-              className="block text-sm font-medium mb-3"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Device Model
-            </label>
-            <CustomSelect
-              value={device}
-              onChange={(value) => {
-                const newDevice = value as DeviceName
-                setDevice(newDevice)
-                if (newDevice === 'iPhone Duo') {
-                  setPose('closed')
-                  setLandscape(false)
-                }
-                if (pixelFolds.includes(newDevice)) setPose('closed')
-                const newColors = DeviceOptions[newDevice].colors
-                setColor(newColors[0])
-              }}
-              options={orderedDevices.map((name) => ({ value: name, label: name }))}
+        {platforms.map(({ key, title, Logo }) => (
+          <Section key={key} title={title}>
+            <ul className="flex flex-col gap-1">
+              {platformDevices[key].map((name) => {
+                const selected = name === device
+                return (
+                  <li key={name}>
+                    <button
+                      onClick={() => selectDevice(name)}
+                      aria-pressed={selected}
+                      className={`flex h-9 w-full items-center gap-2 rounded-md border px-2 text-left text-[15px] transition-colors ${
+                        selected ? 'border-[#8ec8f6] bg-[#e6f4fe]' : 'border-transparent bg-[#f9f9fb] hover:bg-[#f0f0f3]'
+                      }`}
+                    >
+                      <span className="text-[#60646c]"><Logo /></span>
+                      {name}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </Section>
+        ))}
+
+        <Section title="Device options" collapsible>
+          {colors.length > 0 && color && (
+            <OptionRow
+              label="Color"
+              value={color}
+              swatch={getColorHex(color)}
+              options={colors.map((c) => ({ value: c, label: colorLabel(c) }))}
+              onChange={setColor}
             />
-            <div
-              className="flex items-center gap-3 mt-3 text-xs"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              <span>
-                {isDuo && pose !== 'closed' ? '951 × 669'
-                  : pixelFoldOpen ? PIXEL_FOLD_INNER.join(' × ')
-                  : `${deviceInfo.width} × ${deviceInfo.height}`}
-              </span>
-              {deviceInfo.hasLandscape && (
-                <span
-                  className="px-2 py-0.5 rounded-full"
-                  style={{ background: 'var(--color-accent-subtle)', color: 'var(--color-accent)' }}
-                >
-                  Rotatable
-                </span>
-              )}
-            </div>
-          </div>
+          )}
+          {isDuo && (
+            <OptionRow
+              label="Fold"
+              value={pose}
+              options={duoPoses}
+              onChange={(value) => {
+                const next = duoPoses.find((p) => p.value === value)!
+                setPose(next.value)
+                setLandscape(next.landscape)
+              }}
+            />
+          )}
+          {isPixelFold && (
+            <OptionRow label="Fold" value={pose} options={pixelFoldPoses} onChange={(value) => setPose(value as DuoPose)} />
+          )}
+          {showOrientation && (
+            <OptionRow
+              label="Orientation"
+              value={landscape ? 'landscape' : 'portrait'}
+              options={[{ value: 'portrait', label: 'Portrait' }, { value: 'landscape', label: 'Landscape' }]}
+              onChange={(value) => setLandscape(value === 'landscape')}
+            />
+          )}
+          {deviceHasNotch && (
+            <OptionRow
+              label={isDuo ? 'Camera' : devicesWithDynamicIsland.includes(device) ? 'Dynamic Island' : 'Notch'}
+              value={hideNotch ? 'hide' : 'show'}
+              options={onOff}
+              onChange={(value) => setHideNotch(value === 'hide')}
+            />
+          )}
+          <OptionRow
+            label="Scale"
+            value={String(deviceZoom)}
+            options={zoomPresets.map((p) => p.value === 'auto' ? { ...p, label: `Auto (${Math.round(autoZoomValue * 100)}%)` } : p)}
+            onChange={(value) => setDeviceZoom(value === 'auto' ? 'auto' : Number(value))}
+          />
+        </Section>
 
-          {/* Color Selection */}
-          {colors.length > 0 && (
-            <div className="glass-card p-5">
-              <label
-                className="block text-sm font-medium mb-3"
-                style={{ color: 'var(--color-text-primary)' }}
+        <Section title="Screenshot" collapsible>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+          {!uploadedImage ? (
+            <>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`flex w-full flex-col items-center gap-1.5 rounded-md border border-dashed px-4 py-5 text-center transition-colors ${
+                  isDropZoneActive ? 'border-[#8ec8f6] bg-[#e6f4fe]' : 'border-[#d9d9e0] bg-[#f9f9fb] hover:bg-[#f0f0f3]'
+                }`}
               >
-                Color Variant
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {colors.map((c) => (
+                <Upload className="h-5 w-5 text-[#60646c]" />
+                <span className="text-[14px] font-medium">Upload a screenshot</span>
+                <span className="text-[13px] text-[#8b8d98]">or drop it here or on the device</span>
+              </button>
+              <p className="mt-2 text-[13px] text-[#8b8d98]">Showing the expo.dev screenshot until you upload one.</p>
+            </>
+          ) : (
+            <div className="flex gap-2">
+              <SmallButton onClick={() => fileInputRef.current?.click()}><Upload className="h-4 w-4" />Replace</SmallButton>
+              <SmallButton onClick={handleClearImage}><Trash2 className="h-4 w-4" />Use default</SmallButton>
+            </div>
+          )}
+
+          {/* Background, zoom and position of the screenshot on the screen */}
+          <OptionRow
+            label="Background"
+            value={bgType}
+            options={[{ value: 'solid', label: 'Solid' }, { value: 'gradient', label: 'Gradient' }]}
+            onChange={(value) => setBgType(value as 'solid' | 'gradient')}
+          />
+          <div className="flex flex-wrap items-center gap-1.5 pb-2">
+            {bgType === 'solid' ? (
+              <>
+                <input
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="h-7 w-7 cursor-pointer rounded-md border-0 bg-transparent"
+                  aria-label="Background color"
+                />
+                {solidColors.map((c) => (
                   <button
                     key={c}
-                    onClick={() => setColor(c)}
-                    className="group relative"
-                  >
-                    <span
-                      className="block w-10 h-10 rounded-full transition-all"
-                      style={{
-                        backgroundColor: getColorHex(c),
-                        boxShadow: color === c
-                          ? '0 0 0 3px var(--color-accent), inset 0 0 0 2px rgba(255,255,255,0.3)'
-                          : 'inset 0 0 0 2px rgba(0,0,0,0.1)',
-                        transform: color === c ? 'scale(1.1)' : 'scale(1)',
-                      }}
-                    />
-                    <span
-                      className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] capitalize opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-                      style={{ color: 'var(--color-text-tertiary)' }}
-                    >
-                      {c}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Fold pose (iPhone Duo) */}
-          {isDuo && (
-            <div className="glass-card p-5">
-              <label
-                className="block text-sm font-medium mb-3"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Fold
-              </label>
-              <div className="flex gap-2">
-                {duoPoses.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setPose(opt.value)
-                      setLandscape(opt.landscape)
-                    }}
-                    className="flex-1 px-3 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      background: pose === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                      color: pose === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                      border: `1px solid ${pose === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Fold pose (Pixel Pro Fold) */}
-          {isPixelFold && (
-            <div className="glass-card p-5">
-              <label
-                className="block text-sm font-medium mb-3"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Fold
-              </label>
-              <div className="flex gap-2">
-                {pixelFoldPoses.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setPose(opt.value)}
-                    className="flex-1 px-3 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      background: pose === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                      color: pose === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                      border: `1px solid ${pose === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Orientation */}
-          {deviceInfo.hasLandscape && !(isDuo && pose === 'half-open') && (
-            <div className="glass-card p-5">
-              <label
-                className="block text-sm font-medium mb-3"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Orientation
-              </label>
-              <div className="flex gap-2">
-                {[
-                  { value: false, label: 'Portrait' },
-                  { value: true, label: 'Landscape' },
-                ].map((opt) => (
-                  <button
-                    key={opt.label}
-                    onClick={() => setLandscape(opt.value)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      background: landscape === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                      color: landscape === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                      border: `1px solid ${landscape === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    }}
-                  >
-                    <Smartphone className="w-4 h-4" style={{ transform: opt.value ? 'rotate(90deg)' : 'none' }} />
-                    <span>{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Notch Toggle */}
-          {deviceHasNotch && (
-            <div className="glass-card p-5">
-              <label
-                className="block text-sm font-medium mb-3"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                {isDuo ? 'Camera' : devicesWithDynamicIsland.includes(device) ? 'Dynamic Island' : 'Notch'}
-              </label>
-              <div className="flex gap-2">
-                {[
-                  { value: false, label: 'Show', icon: Eye },
-                  { value: true, label: 'Hide', icon: EyeOff },
-                ].map((opt) => (
-                  <button
-                    key={opt.label}
-                    onClick={() => setHideNotch(opt.value)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      background: hideNotch === opt.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                      color: hideNotch === opt.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                      border: `1px solid ${hideNotch === opt.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    }}
-                  >
-                    <opt.icon className="w-4 h-4" />
-                    <span>{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quick Zoom */}
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <label
-                className="text-sm font-medium"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Device Scale
-              </label>
-              {deviceZoom === 'auto' && (
-                <span
-                  className="text-xs"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  {Math.round(autoZoomValue * 100)}%
-                </span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {zoomPresets.map((preset) => (
-                <button
-                  key={String(preset.value)}
-                  onClick={() => setDeviceZoom(preset.value)}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    background: deviceZoom === preset.value ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                    color: deviceZoom === preset.value ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                    border: `1px solid ${deviceZoom === preset.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                  }}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Screen Content */}
-          <div className="glass-card p-5">
-            <label
-              className="block text-sm font-medium mb-3"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Screen Content
-            </label>
-
-            {/* Content Mode Tabs */}
-            <div
-              className="flex rounded-xl p-1 mb-4"
-              style={{ background: 'var(--color-bg-tertiary)' }}
-            >
-              {[
-                { mode: 'demo' as const, icon: Sparkles, label: 'Demo' },
-                { mode: 'url' as const, icon: Globe, label: 'URL' },
-                { mode: 'upload' as const, icon: ImageIcon, label: 'Screenshot' },
-              ].map(({ mode, icon: Icon, label }) => (
-                <button
-                  key={mode}
-                  onClick={() => setContentMode(mode)}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-                  style={{
-                    background: contentMode === mode ? 'var(--color-bg-primary)' : 'transparent',
-                    color: contentMode === mode ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                    boxShadow: contentMode === mode ? '0 1px 3px var(--color-shadow)' : 'none',
-                  }}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* URL Mode Controls */}
-            {contentMode === 'url' && (
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={previewUrl}
-                    onChange={(e) => setPreviewUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleLoadUrl()}
-                    placeholder="Enter any URL..."
-                    className="flex-1 px-3 py-2 rounded-lg text-sm transition-all"
-                    style={{
-                      background: 'var(--color-bg-tertiary)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)',
-                    }}
+                    onClick={() => setBgColor(c)}
+                    aria-label={c}
+                    className="h-6 w-6 rounded-md"
+                    style={{ background: c, boxShadow: bgColor === c ? '0 0 0 2px #8ec8f6' : 'inset 0 0 0 1px rgba(0,0,0,0.15)' }}
                   />
-                  <button
-                    onClick={handleLoadUrl}
-                    className="btn-accent px-4 py-2 rounded-lg text-sm"
-                  >
-                    Load
-                  </button>
-                </div>
-                {activeUrl && (
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="text-xs truncate flex-1"
-                      style={{ color: 'var(--color-text-tertiary)' }}
-                    >
-                      {activeUrl}
-                    </span>
-                    <button
-                      onClick={() => setActiveUrl('')}
-                      className="text-xs ml-2 hover:underline"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      Clear
-                    </button>
-                  </div>
-                )}
-                <p
-                  className="text-xs"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  Note: Some sites block iframe embedding
-                </p>
-              </div>
-            )}
-
-            {/* Upload Mode Controls */}
-            {contentMode === 'upload' && (
-              <div className="space-y-4">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
+                ))}
+              </>
+            ) : (
+              gradientPresets.map((preset) => (
+                <button
+                  key={preset.name}
+                  onClick={() => setBgGradient(preset.value)}
+                  title={preset.name}
+                  aria-label={preset.name}
+                  className="h-7 w-7 rounded-md"
+                  style={{ background: preset.value, boxShadow: bgGradient === preset.value ? '0 0 0 2px #8ec8f6' : 'none' }}
                 />
-
-                {/* Drag & Drop Zone */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => !uploadedImage && fileInputRef.current?.click()}
-                  className="relative rounded-xl p-6 text-center transition-all cursor-pointer"
-                  style={{
-                    border: isDropZoneActive
-                      ? '2px dashed var(--color-accent)'
-                      : uploadedImage
-                        ? '2px solid var(--color-border)'
-                        : '2px dashed var(--color-border)',
-                    background: isDropZoneActive
-                      ? 'var(--color-accent-subtle)'
-                      : uploadedImage
-                        ? 'var(--color-bg-tertiary)'
-                        : 'transparent',
-                  }}
-                >
-                  {uploadedImage ? (
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={uploadedImage}
-                        alt="Preview"
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 text-left">
-                        <p
-                          className="text-sm font-medium truncate"
-                          style={{ color: 'var(--color-text-primary)' }}
-                        >
-                          Image uploaded
-                        </p>
-                        <p
-                          className="text-xs"
-                          style={{ color: 'var(--color-text-tertiary)' }}
-                        >
-                          Drag a new image or click below
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-                        style={{
-                          background: isDropZoneActive ? 'var(--color-accent)' : 'var(--color-bg-tertiary)',
-                        }}
-                      >
-                        <Upload
-                          className="w-5 h-5"
-                          style={{
-                            color: isDropZoneActive ? 'var(--color-bg-primary)' : 'var(--color-text-tertiary)',
-                          }}
-                        />
-                      </div>
-                      <p
-                        className="text-sm font-medium mb-1"
-                        style={{ color: isDropZoneActive ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
-                      >
-                        {isDropZoneActive ? 'Drop image here' : 'Drag & drop an image'}
-                      </p>
-                      <p
-                        className="text-xs"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        or click to browse
-                      </p>
-                    </>
-                  )}
-                </div>
-
-                {/* Action Buttons (when image uploaded) */}
-                {uploadedImage && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
-                      style={{
-                        background: 'var(--color-accent-subtle)',
-                        border: '1px solid var(--color-accent)',
-                        color: 'var(--color-accent)',
-                      }}
-                    >
-                      <Upload className="w-4 h-4" />
-                      Change Image
-                    </button>
-                    <button
-                      onClick={handleClearImage}
-                      className="px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
-                      style={{
-                        background: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-secondary)',
-                      }}
-                    >
-                      Clear
-                    </button>
-                  </div>
-                )}
-
-                {/* Image Controls */}
-                {uploadedImage && (
-                  <>
-                    {/* Background Options */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Palette className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />
-                        <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                          Background
-                        </span>
-                      </div>
-
-                      {/* Background Type Toggle */}
-                      <div
-                        className="flex rounded-lg p-1"
-                        style={{ background: 'var(--color-bg-tertiary)' }}
-                      >
-                        {[
-                          { type: 'solid' as const, label: 'Solid' },
-                          { type: 'gradient' as const, label: 'Gradient' },
-                        ].map(({ type, label }) => (
-                          <button
-                            key={type}
-                            onClick={() => setBgType(type)}
-                            className="flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                            style={{
-                              background: bgType === type ? 'var(--color-bg-primary)' : 'transparent',
-                              color: bgType === type ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                            }}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Solid Color Picker */}
-                      {bgType === 'solid' && (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={bgColor}
-                            onChange={(e) => setBgColor(e.target.value)}
-                            className="w-8 h-8 rounded-lg cursor-pointer border-0"
-                            style={{ background: 'transparent' }}
-                          />
-                          <div className="flex gap-1.5 flex-wrap">
-                            {['#000000', '#ffffff', '#1a1a2e', '#f5f5f5', '#0f172a', '#fef3c7'].map((c) => (
-                              <button
-                                key={c}
-                                onClick={() => setBgColor(c)}
-                                className="w-6 h-6 rounded-md transition-transform hover:scale-110"
-                                style={{
-                                  background: c,
-                                  boxShadow: bgColor === c
-                                    ? '0 0 0 2px var(--color-accent)'
-                                    : 'inset 0 0 0 1px rgba(128,128,128,0.3)',
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Gradient Presets */}
-                      {bgType === 'gradient' && (
-                        <div className="flex gap-1.5 flex-wrap">
-                          {gradientPresets.map((preset) => (
-                            <button
-                              key={preset.name}
-                              onClick={() => setBgGradient(preset.value)}
-                              title={preset.name}
-                              className="w-8 h-8 rounded-lg transition-transform hover:scale-110"
-                              style={{
-                                background: preset.value,
-                                boxShadow: bgGradient === preset.value
-                                  ? '0 0 0 2px var(--color-accent)'
-                                  : 'none',
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Zoom Control */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ZoomIn className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />
-                          <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                            Zoom
-                          </span>
-                        </div>
-                        <button
-                          onClick={handleResetZoomPan}
-                          className="flex items-center gap-1 text-xs"
-                          style={{ color: 'var(--color-accent)' }}
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          Reset
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="range"
-                          min="0.5"
-                          max="3"
-                          step="0.1"
-                          value={imageZoom}
-                          onChange={(e) => setImageZoom(parseFloat(e.target.value))}
-                          className="flex-1"
-                          style={{ accentColor: 'var(--color-accent)' }}
-                        />
-                        <span
-                          className="text-xs font-medium w-10 text-right"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                          {imageZoom.toFixed(1)}x
-                        </span>
-                      </div>
-                      <div
-                        className="flex items-center gap-2 text-xs"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        <Move className="w-3 h-3" />
-                        <span>Drag the image to reposition</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Demo Mode - just a hint */}
-            {contentMode === 'demo' && (
-              <p
-                className="text-xs"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
-                Showing a sample app interface
-              </p>
+              ))
             )}
           </div>
-
-          {/* Export */}
-          <div className="glass-card p-5">
-            <label
-              className="block text-sm font-medium mb-3"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Export Mockup
-            </label>
-
-            {/* Warning for URL mode */}
-            {contentMode === 'url' && activeUrl && (
-              <div
-                className="mb-3 px-3 py-2 rounded-lg text-xs"
-                style={{
-                  background: 'rgba(234, 179, 8, 0.1)',
-                  border: '1px solid rgba(234, 179, 8, 0.3)',
-                  color: 'var(--color-text-secondary)',
-                }}
-              >
-                <strong>Note:</strong> URL content cannot be captured due to browser security. Use the Screenshot tab to upload a screenshot of the website instead.
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <div className="w-24">
-                <CustomSelect
-                  value={exportFormat}
-                  onChange={(value) => setExportFormat(value as 'png' | 'webp')}
-                  options={[
-                    { value: 'png', label: 'PNG' },
-                    { value: 'webp', label: 'WebP' },
-                  ]}
-                />
-              </div>
-              <button
-                onClick={handleExport}
-                disabled={isExporting || (contentMode === 'url' && !!activeUrl)}
-                className="flex-1 flex items-center justify-center gap-2 btn-accent rounded-lg"
-                style={{
-                  opacity: isExporting || (contentMode === 'url' && activeUrl) ? 0.5 : 1,
-                  cursor: (contentMode === 'url' && activeUrl) ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <Download className="w-4 h-4" />
-                {isExporting ? 'Exporting...' : 'Download'}
-              </button>
+          <div className="flex items-center justify-between gap-3 py-[9px]">
+            <span className="text-[15px] text-[#60646c]">Zoom</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0.5"
+                max="3"
+                step="0.1"
+                value={imageZoom}
+                onChange={(e) => setImageZoom(parseFloat(e.target.value))}
+                className="w-28 accent-[#1c2024]"
+                aria-label="Screenshot zoom"
+              />
+              <span className="w-9 text-right text-[13px] text-[#60646c]">{imageZoom.toFixed(1)}x</span>
             </div>
           </div>
+          <div className="flex items-center justify-between text-[13px] text-[#8b8d98]">
+            <span className="flex items-center gap-1.5"><Move className="h-3.5 w-3.5" />Drag the image to reposition</span>
+            <button onClick={handleResetZoomPan} className="flex items-center gap-1 text-[#1c2024] hover:underline">
+              <RotateCcw className="h-3.5 w-3.5" />Reset
+            </button>
+          </div>
+        </Section>
 
-          {/* Code */}
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <label
-                className="text-sm font-medium"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Usage Code
-              </label>
-              <button
-                onClick={handleCopy}
-                className="text-xs font-medium transition-colors"
-                style={{ color: 'var(--color-accent)' }}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <pre className="code-block p-4 text-xs overflow-x-auto">
-              <code>{codeSnippet}</code>
+        <Section title="Export" collapsible>
+          <OptionRow
+            label="Format"
+            value={exportFormat}
+            options={[{ value: 'png', label: 'PNG' }, { value: 'webp', label: 'WebP' }]}
+            onChange={(value) => setExportFormat(value as 'png' | 'webp')}
+          />
+          <div className="pt-1">
+            <SmallButton onClick={handleExport} primary disabled={isExporting}>
+              <Download className="h-4 w-4" />{isExporting ? 'Exporting…' : 'Download mockup'}
+            </SmallButton>
+          </div>
+        </Section>
+
+        <Section title="Code" collapsible>
+          <div className="relative">
+            <pre className="overflow-x-auto rounded-md bg-[#f9f9fb] p-3 font-mono text-[12.5px] leading-relaxed text-[#1c2024] ring-1 ring-[#ececef]">
+              {codeSnippet}
             </pre>
+            <button
+              onClick={handleCopy}
+              className="absolute right-2 top-2 rounded-md bg-white p-1.5 text-[#60646c] ring-1 ring-[#ececef] hover:text-[#1c2024]"
+              aria-label="Copy code"
+            >
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </button>
           </div>
-        </div>
+        </Section>
+      </aside>
 
-        {/* Device Preview */}
-        <div className="flex-1 min-w-0">
-          <div ref={previewContainerRef} className="device-showcase overflow-auto flex items-center justify-center" style={{ minHeight: '600px' }}>
-            <div style={{ padding: '60px', display: 'inline-block' }}>
-              <div ref={deviceRef} style={{ display: 'inline-block' }}>
-                <MockFrame
-                  device={device}
-                  {...(colors.length > 0 ? { color } : {})}
-                  landscape={deviceInfo.hasLandscape ? landscape : undefined}
-                  {...(isDuo || isPixelFold ? { pose } : {})}
-                  zoom={effectiveZoom}
-                  animated
-                  hideNotch={hideNotch}
-                >
-                  {contentMode === 'upload' && uploadedImage ? (
-                    <UploadedImageContent
-                      src={uploadedImage}
-                      zoom={imageZoom}
-                      position={imagePosition}
-                      onMouseDown={handleMouseDown}
-                      onMouseMove={handleMouseMove}
-                      onMouseUp={handleMouseUp}
-                      isDragging={isDragging}
-                      background={bgType === 'gradient' ? bgGradient : bgColor}
-                    />
-                  ) : contentMode === 'url' && activeUrl ? (
-                    <iframe
-                      src={activeUrl}
-                      className="w-full h-full border-0"
-                      style={{ background: '#fff' }}
-                      title="Preview"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  ) : (
-                    <MockAppScreen
-                      device={isDuo ? 'MacBook' : device} // the Duo shows one wallpaper in every pose, so a fold reads as one screen
-                      landscape={!isDuo && deviceInfo.hasLandscape && landscape}
-                      deviceWidth={pixelFoldOpen ? PIXEL_FOLD_INNER[0] : deviceInfo.width}
-                      deviceHeight={pixelFoldOpen ? PIXEL_FOLD_INNER[1] : deviceInfo.height}
-                    />
-                  )}
-                </MockFrame>
-              </div>
-            </div>
-          </div>
+      {/* Canvas: the device in the middle; drop a screenshot anywhere on it */}
+      <main
+        ref={canvasRef}
+        className={`relative flex flex-1 items-center justify-center overflow-hidden ${isDropZoneActive ? 'bg-[#eef6fd]' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* The padding keeps the side buttons inside exported images */}
+        <div
+          ref={deviceRef}
+          style={{ display: 'inline-block', padding: 8, opacity: isExporting ? 0 : 1 }}
+        >
+          <MockFrame
+            {...frameProps}
+            zoom={isExporting ? undefined : effectiveZoom}
+            animated={!isExporting}
+            hideNotch={hideNotch}
+          >
+            <UploadedImageContent
+              src={uploadedImage ?? defaultScreenshot}
+              zoom={imageZoom}
+              position={imagePosition}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              isDragging={isDragging}
+              background={bgType === 'gradient' ? bgGradient : bgColor}
+            />
+          </MockFrame>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
