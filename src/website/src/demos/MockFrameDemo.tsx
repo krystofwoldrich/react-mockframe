@@ -25,30 +25,93 @@ const AndroidLogo = () => (
   </svg>
 )
 
-type Platform = 'ios' | 'android' | 'macos'
+/**
+ * Every device in the list, by name. `frame` is the MockFrame device that draws it: its own frame or one
+ * with the same screen size. Status: `missing` = on the list but no frame yet, `unneeded` = a frame
+ * that is not on the list.
+ */
+type Entry = { name: string, frame?: DeviceName, status?: 'missing' | 'unneeded' }
 
-// Newest first within each platform
-const platformDevices: Record<Platform, DeviceName[]> = {
-  ios: [
-    'iPhone 18 Pro', 'iPhone 18 Pro Max', 'iPhone Duo', 'iPhone Air', 'iPhone 17 Pro Max', 'iPhone 17',
-    'iPhone 12 mini', 'iPhone X', 'iPhone 8 Plus', 'iPhone 8', 'iPad Pro', 'iPad Mini',
-  ],
-  android: ['Pixel 10 Pro', 'Pixel 10 Pro Fold', 'Pixel 10', 'Pixel 9 Pro', 'Pixel 9 Pro Fold', 'Galaxy S25'],
-  macos: ['MacBook Pro', 'MacBook Pro 2020'],
-}
+const missing = (...names: string[]): Entry[] => names.map((name) => ({ name, status: 'missing' }))
 
-// Any device added to the library later still shows up, at the end of its platform list
-const listed = new Set(Object.values(platformDevices).flat())
-for (const name of DeviceNames.filter((d) => !listed.has(d))) {
-  const platform: Platform = /pixel|galaxy/i.test(name) ? 'android' : /macbook/i.test(name) ? 'macos' : 'ios'
-  platformDevices[platform].push(name)
-}
-
-const platforms: { key: Platform, title: string, Logo: () => React.JSX.Element }[] = [
-  { key: 'ios', title: 'iOS', Logo: AppleLogo },
-  { key: 'android', title: 'Android', Logo: AndroidLogo },
-  { key: 'macos', title: 'macOS', Logo: AppleLogo },
+const iphoneEntries: Entry[] = [
+  { name: 'iPhone 18 Pro', frame: 'iPhone 18 Pro' },
+  { name: 'iPhone 18 Pro Max', frame: 'iPhone 18 Pro Max' },
+  { name: 'iPhone Duo', frame: 'iPhone Duo' },
+  { name: 'iPhone 17 Pro', frame: 'iPhone 18 Pro' },
+  { name: 'iPhone 17 Pro Max', frame: 'iPhone 17 Pro Max' },
+  ...missing('iPhone 17e'),
+  { name: 'iPhone Air', frame: 'iPhone Air' },
+  { name: 'iPhone 17', frame: 'iPhone 17' },
+  { name: 'iPhone 16 Pro', frame: 'iPhone 18 Pro' },
+  { name: 'iPhone 16 Pro Max', frame: 'iPhone 18 Pro Max' },
+  ...missing(
+    'iPhone 16e', 'iPhone 16', 'iPhone 16 Plus',
+    'iPhone 15 Pro', 'iPhone 15 Pro Max', 'iPhone 15', 'iPhone 15 Plus',
+    'iPhone 14 Pro', 'iPhone 14 Pro Max', 'iPhone 14', 'iPhone 14 Plus',
+    'iPhone 13 Pro', 'iPhone 13 Pro Max', 'iPhone 13',
+  ),
+  { name: 'iPhone 13 mini', frame: 'iPhone 12 mini' },
+  ...missing('iPhone 12 Pro', 'iPhone 12 Pro Max', 'iPhone 12'),
+  { name: 'iPhone 12 mini', frame: 'iPhone 12 mini' },
+  { name: 'iPhone 11 Pro', frame: 'iPhone X' },
+  ...missing('iPhone 11 Pro Max', 'iPhone 11', 'iPhone Xʀ'),
+  { name: 'iPhone Xs', frame: 'iPhone X' },
+  ...missing('iPhone Xs Max'),
+  { name: 'iPhone X', frame: 'iPhone X' },
+  { name: 'iPhone 8 Plus', frame: 'iPhone 8 Plus', status: 'unneeded' },
+  { name: 'iPhone 8', frame: 'iPhone 8', status: 'unneeded' },
 ]
+
+const ipadEntries: Entry[] = [
+  { name: 'iPad Pro 13-inch (M5) (16GB)', frame: 'iPad Pro' },
+  { name: 'iPad Pro 13-inch (M5)', frame: 'iPad Pro' },
+  ...missing('iPad Pro 11-inch (M5) (16GB)', 'iPad Pro 11-inch (M5)', 'iPad Pro 11-inch (M4) (16GB)', 'iPad Pro 11-inch (M4)'),
+  { name: 'iPad Pro 13-inch (M4) (16GB)', frame: 'iPad Pro' },
+  { name: 'iPad Pro 13-inch (M4)', frame: 'iPad Pro' },
+  ...missing(
+    'iPad Air 13-inch (M4)', 'iPad Air 11-inch (M4)', 'iPad (A16)', 'iPad Air 13-inch (M3)', 'iPad Air 11-inch (M3)',
+    'iPad Air 11-inch (M2)', 'iPad Air 13-inch (M2)', 'iPad mini (A17 Pro)', 'iPad Pro (11-inch) (4th generation)',
+    'iPad Pro (12.9-inch) (6th generation)', 'iPad (10th generation)', 'iPad Air (5th generation)',
+    'iPad mini (6th generation)', 'iPad Pro (11-inch) (3rd generation)', 'iPad Pro (12.9-inch) (5th generation)',
+    'iPad Air (4th generation)', 'iPad Pro (11-inch) (2nd generation)', 'iPad Pro (12.9-inch) (4th generation)',
+    'iPad Pro (11-inch) (1st generation)', 'iPad Pro (12.9-inch) (3rd generation)',
+  ),
+  { name: 'iPad Mini', frame: 'iPad Mini', status: 'unneeded' },
+]
+
+const androidEntries: Entry[] = [
+  { name: 'Pixel 10 Pro', frame: 'Pixel 10 Pro' },
+  { name: 'Pixel 10 Pro Fold', frame: 'Pixel 10 Pro Fold' },
+  { name: 'Pixel 9 Pro', frame: 'Pixel 9 Pro' },
+  { name: 'Pixel 9 Pro Fold', frame: 'Pixel 9 Pro Fold' },
+  { name: 'Pixel 10', frame: 'Pixel 10', status: 'unneeded' },
+  { name: 'Galaxy S25', frame: 'Galaxy S25', status: 'unneeded' },
+]
+
+const macEntries: Entry[] = [
+  { name: 'MacBook Pro', frame: 'MacBook Pro', status: 'unneeded' },
+  { name: 'MacBook Pro 2020', frame: 'MacBook Pro 2020', status: 'unneeded' },
+]
+
+// Any frame added to the library later still shows up, at the end of its platform list
+const framesListed = new Set([...iphoneEntries, ...ipadEntries, ...androidEntries, ...macEntries].map((e) => e.frame))
+for (const name of DeviceNames.filter((d) => !framesListed.has(d))) {
+  const list = /pixel|galaxy/i.test(name) ? androidEntries : /macbook/i.test(name) ? macEntries : /ipad/i.test(name) ? ipadEntries : iphoneEntries
+  list.push({ name, frame: name })
+}
+
+const platforms: { title: string, entries: Entry[], Logo: () => React.JSX.Element }[] = [
+  { title: 'iPhone', entries: iphoneEntries, Logo: AppleLogo },
+  { title: 'iPad', entries: ipadEntries, Logo: AppleLogo },
+  { title: 'Android', entries: androidEntries, Logo: AndroidLogo },
+  { title: 'macOS', entries: macEntries, Logo: AppleLogo },
+]
+
+const STATUS_DOT: Record<NonNullable<Entry['status']>, { color: string, label: string }> = {
+  missing: { color: '#0090ff', label: 'Needs a frame' },
+  unneeded: { color: '#e5484d', label: 'Not on the list' },
+}
 
 /* -----------------------------------------------------------------------------
    Device data for the controls
@@ -278,6 +341,8 @@ function UploadedImageContent({ src, zoom, position, onMouseDown, onMouseMove, o
 
 export default function MockFrameDemo() {
   const [device, setDevice] = useState<DeviceName>('iPhone 18 Pro')
+  const [entry, setEntry] = useState<Entry>(iphoneEntries[0]!)
+  const needsFrame = !entry.frame
   const [landscape, setLandscape] = useState(false)
   const [hideNotch, setHideNotch] = useState(false)
   const [pose, setPose] = useState<DuoPose>('closed')
@@ -502,22 +567,38 @@ export default function MockFrameDemo() {
           <span className="text-[20px] font-semibold tracking-tight">MockFrame</span>
         </header>
 
-        {platforms.map(({ key, title, Logo }) => (
-          <Section key={key} title={title}>
+        {/* Legend for the status dots */}
+        <div className="flex gap-4 border-b border-[#ececef] px-4 py-3 text-[13px] text-[#60646c]">
+          {Object.values(STATUS_DOT).map(({ color, label }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: color }} />{label}
+            </span>
+          ))}
+        </div>
+
+        {platforms.map(({ title, entries, Logo }) => (
+          <Section key={title} title={title}>
             <ul className="flex flex-col gap-1">
-              {platformDevices[key].map((name) => {
-                const selected = name === device
+              {entries.map((e) => {
+                const selected = e.name === entry.name
+                const dot = e.status && STATUS_DOT[e.status]
                 return (
-                  <li key={name}>
+                  <li key={e.name}>
                     <button
-                      onClick={() => selectDevice(name)}
+                      onClick={() => {
+                        setEntry(e)
+                        if (e.frame && e.frame !== device) selectDevice(e.frame)
+                      }}
                       aria-pressed={selected}
                       className={`flex h-9 w-full items-center gap-2 rounded-md border px-2 text-left text-[15px] transition-colors ${
                         selected ? 'border-[#8ec8f6] bg-[#e6f4fe]' : 'border-transparent bg-[#f9f9fb] hover:bg-[#f0f0f3]'
                       }`}
                     >
                       <span className="text-[#60646c]"><Logo /></span>
-                      {name}
+                      <span className="truncate" title={e.name}>{e.name}</span>
+                      {dot && (
+                        <span className="ml-auto h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: dot.color }} title={dot.label} />
+                      )}
                     </button>
                   </li>
                 )
@@ -526,54 +607,56 @@ export default function MockFrameDemo() {
           </Section>
         ))}
 
-        <Section title="Device options" collapsible>
-          {colors.length > 0 && color && (
+        {!needsFrame && (
+          <Section title="Device options" collapsible>
+            {colors.length > 0 && color && (
+              <OptionRow
+                label="Color"
+                value={color}
+                swatch={getColorHex(color)}
+                options={colors.map((c) => ({ value: c, label: colorLabel(c) }))}
+                onChange={setColor}
+              />
+            )}
+            {isDuo && (
+              <OptionRow
+                label="Fold"
+                value={pose}
+                options={duoPoses}
+                onChange={(value) => {
+                  const next = duoPoses.find((p) => p.value === value)!
+                  setPose(next.value)
+                  setLandscape(next.landscape)
+                }}
+              />
+            )}
+            {isPixelFold && (
+              <OptionRow label="Fold" value={pose} options={pixelFoldPoses} onChange={(value) => setPose(value as DuoPose)} />
+            )}
+            {showOrientation && (
+              <OptionRow
+                label="Orientation"
+                value={landscape ? 'landscape' : 'portrait'}
+                options={[{ value: 'portrait', label: 'Portrait' }, { value: 'landscape', label: 'Landscape' }]}
+                onChange={(value) => setLandscape(value === 'landscape')}
+              />
+            )}
+            {deviceHasNotch && (
+              <OptionRow
+                label={isDuo ? 'Camera' : devicesWithDynamicIsland.includes(device) ? 'Dynamic Island' : 'Notch'}
+                value={hideNotch ? 'hide' : 'show'}
+                options={onOff}
+                onChange={(value) => setHideNotch(value === 'hide')}
+              />
+            )}
             <OptionRow
-              label="Color"
-              value={color}
-              swatch={getColorHex(color)}
-              options={colors.map((c) => ({ value: c, label: colorLabel(c) }))}
-              onChange={setColor}
+              label="Scale"
+              value={String(deviceZoom)}
+              options={zoomPresets.map((p) => p.value === 'auto' ? { ...p, label: `Auto (${Math.round(autoZoomValue * 100)}%)` } : p)}
+              onChange={(value) => setDeviceZoom(value === 'auto' ? 'auto' : Number(value))}
             />
-          )}
-          {isDuo && (
-            <OptionRow
-              label="Fold"
-              value={pose}
-              options={duoPoses}
-              onChange={(value) => {
-                const next = duoPoses.find((p) => p.value === value)!
-                setPose(next.value)
-                setLandscape(next.landscape)
-              }}
-            />
-          )}
-          {isPixelFold && (
-            <OptionRow label="Fold" value={pose} options={pixelFoldPoses} onChange={(value) => setPose(value as DuoPose)} />
-          )}
-          {showOrientation && (
-            <OptionRow
-              label="Orientation"
-              value={landscape ? 'landscape' : 'portrait'}
-              options={[{ value: 'portrait', label: 'Portrait' }, { value: 'landscape', label: 'Landscape' }]}
-              onChange={(value) => setLandscape(value === 'landscape')}
-            />
-          )}
-          {deviceHasNotch && (
-            <OptionRow
-              label={isDuo ? 'Camera' : devicesWithDynamicIsland.includes(device) ? 'Dynamic Island' : 'Notch'}
-              value={hideNotch ? 'hide' : 'show'}
-              options={onOff}
-              onChange={(value) => setHideNotch(value === 'hide')}
-            />
-          )}
-          <OptionRow
-            label="Scale"
-            value={String(deviceZoom)}
-            options={zoomPresets.map((p) => p.value === 'auto' ? { ...p, label: `Auto (${Math.round(autoZoomValue * 100)}%)` } : p)}
-            onChange={(value) => setDeviceZoom(value === 'auto' ? 'auto' : Number(value))}
-          />
-        </Section>
+          </Section>
+        )}
 
         <Section title="Screenshot" collapsible>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -665,34 +748,38 @@ export default function MockFrameDemo() {
           </div>
         </Section>
 
-        <Section title="Export" collapsible>
-          <OptionRow
-            label="Format"
-            value={exportFormat}
-            options={[{ value: 'png', label: 'PNG' }, { value: 'webp', label: 'WebP' }]}
-            onChange={(value) => setExportFormat(value as 'png' | 'webp')}
-          />
-          <div className="pt-1">
-            <SmallButton onClick={handleExport} primary disabled={isExporting}>
-              <Download className="h-4 w-4" />{isExporting ? 'Exporting…' : 'Download mockup'}
-            </SmallButton>
-          </div>
-        </Section>
+        {!needsFrame && (
+          <Section title="Export" collapsible>
+            <OptionRow
+              label="Format"
+              value={exportFormat}
+              options={[{ value: 'png', label: 'PNG' }, { value: 'webp', label: 'WebP' }]}
+              onChange={(value) => setExportFormat(value as 'png' | 'webp')}
+            />
+            <div className="pt-1">
+              <SmallButton onClick={handleExport} primary disabled={isExporting}>
+                <Download className="h-4 w-4" />{isExporting ? 'Exporting…' : 'Download mockup'}
+              </SmallButton>
+            </div>
+          </Section>
+        )}
 
-        <Section title="Code" collapsible>
-          <div className="relative">
-            <pre className="overflow-x-auto rounded-md bg-[#f9f9fb] p-3 font-mono text-[12.5px] leading-relaxed text-[#1c2024] ring-1 ring-[#ececef]">
-              {codeSnippet}
-            </pre>
-            <button
-              onClick={handleCopy}
-              className="absolute right-2 top-2 rounded-md bg-white p-1.5 text-[#60646c] ring-1 ring-[#ececef] hover:text-[#1c2024]"
-              aria-label="Copy code"
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </button>
-          </div>
-        </Section>
+        {!needsFrame && (
+          <Section title="Code" collapsible>
+            <div className="relative">
+              <pre className="overflow-x-auto rounded-md bg-[#f9f9fb] p-3 font-mono text-[12.5px] leading-relaxed text-[#1c2024] ring-1 ring-[#ececef]">
+                {codeSnippet}
+              </pre>
+              <button
+                onClick={handleCopy}
+                className="absolute right-2 top-2 rounded-md bg-white p-1.5 text-[#60646c] ring-1 ring-[#ececef] hover:text-[#1c2024]"
+                aria-label="Copy code"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+          </Section>
+        )}
       </aside>
 
       {/* Canvas: the device in the middle; drop a screenshot anywhere on it */}
@@ -703,29 +790,36 @@ export default function MockFrameDemo() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* The padding keeps the side buttons inside exported images */}
-        <div
-          ref={deviceRef}
-          style={{ display: 'inline-block', padding: 8, opacity: isExporting ? 0 : 1 }}
-        >
-          <MockFrame
-            {...frameProps}
-            zoom={isExporting ? undefined : effectiveZoom}
-            animated={!isExporting}
-            hideNotch={hideNotch}
+        {needsFrame ? (
+          <div className="text-center">
+            <p className="text-[17px] font-medium text-[#1c2024]">This needs to be edited.</p>
+            <p className="mt-1 text-[14px] text-[#8b8d98]">{entry.name} has no frame yet.</p>
+          </div>
+        ) : (
+          /* The padding keeps the side buttons inside exported images */
+          <div
+            ref={deviceRef}
+            style={{ display: 'inline-block', padding: 8, opacity: isExporting ? 0 : 1 }}
           >
-            <UploadedImageContent
-              src={uploadedImage ?? defaultScreenshot}
-              zoom={imageZoom}
-              position={imagePosition}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              isDragging={isDragging}
-              background={bgType === 'gradient' ? bgGradient : bgColor}
-            />
-          </MockFrame>
-        </div>
+            <MockFrame
+              {...frameProps}
+              zoom={isExporting ? undefined : effectiveZoom}
+              animated={!isExporting}
+              hideNotch={hideNotch}
+            >
+              <UploadedImageContent
+                src={uploadedImage ?? defaultScreenshot}
+                zoom={imageZoom}
+                position={imagePosition}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                isDragging={isDragging}
+                background={bgType === 'gradient' ? bgGradient : bgColor}
+              />
+            </MockFrame>
+          </div>
+        )}
       </main>
     </div>
   )
