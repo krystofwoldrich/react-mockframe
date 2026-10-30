@@ -142,13 +142,18 @@ export const CORNERS: readonly { key: keyof ScreenShape, x: string, y: string, s
   { key: 'bottomLeft', x: '0', y: '100%', scale: '1 -1' },
 ]
 
-/** A mask as an SVG that fills the masked element: a full rect with the given corners cut out */
-function cornerMaskSvg(paths: Partial<CornerPaths>) {
-  const corners = CORNERS
+/** The given corner cut-outs, each placed at its corner */
+function placedCorners(paths: Partial<CornerPaths>) {
+  return CORNERS
     .filter(({ key }) => paths[key])
     .map(({ key, x, y, scale }) =>
       `<svg x='${x}' y='${y}' overflow='visible'><path d='${paths[key]}' transform='scale(${scale})'/></svg>`)
     .join('')
+}
+
+/** A mask as an SVG that fills the masked element: a full rect with the given corners cut out */
+function cornerMaskSvg(paths: Partial<CornerPaths>) {
+  const corners = placedCorners(paths)
   // A full rectangle with the corner nubs cut out via an inner luminance mask
   return (
     `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'>` +
@@ -267,11 +272,16 @@ export function bodyCornerPaths(
 
 const styleCache = new Map<string, React.CSSProperties>()
 
-/** Inline style that masks an element with `svg`, without the CSS `border-radius` (it would cut the corners too) */
+/**
+ * Inline style that masks an element with `svg`, without the CSS `border-radius` (it would cut the corners too).
+ * Parentheses are percent-encoded too: image exporters such as html-to-image rewrite every `url(...)` they
+ * find in a style, including the `url(#cut)` inside the mask SVG, which would break the mask.
+ */
 function maskStyle(svg: string): React.CSSProperties {
   let style = styleCache.get(svg)
   if (!style) {
-    const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+    const data = encodeURIComponent(svg).replace(/\(/g, '%28').replace(/\)/g, '%29')
+    const mask = `url("data:image/svg+xml,${data}")`
     style = {
       borderRadius: 0,
       maskImage: mask,
@@ -298,10 +308,25 @@ export function screenShapeStyle(shape: ScreenShape): React.CSSProperties {
   return style
 }
 
+/**
+ * Inline style that keeps everything less than `depth` px inside the body edge (one band ring or glow
+ * layer): a rect stroke for the straight edges and the corner cut-outs for the corners. An alpha mask,
+ * so the SVG needs no inner <mask>.
+ */
+export function bodyLayerStyle(paths: CornerPaths, depth: number): React.CSSProperties {
+  return maskStyle(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'>` +
+    `<rect width='100%' height='100%' fill='none' stroke='white' stroke-width='${+(2 * depth).toFixed(3)}'/>` +
+    `<g fill='white'>${placedCorners(paths)}</g>` +
+    '</svg>'
+  )
+}
+
 /** Inline style that cuts an element's `corners` to the body outline of `band` */
 export function bodyShapeStyle(
-  shape: ScreenShape, band: FrameBand, corners: readonly (keyof ScreenShape)[],
+  shape: ScreenShape, band: FrameBand, corners: readonly (keyof ScreenShape)[] = CORNERS.map((c) => c.key),
+  landscape?: boolean,
 ): React.CSSProperties {
-  const paths = bodyCornerPaths(shape, paddingSides(band.padding), 0, band.circles)
+  const paths = bodyCornerPaths(shape, paddingSides(band.padding, landscape), 0, band.circles)
   return maskStyle(cornerMaskSvg(Object.fromEntries(corners.map((key) => [key, paths[key]]))))
 }

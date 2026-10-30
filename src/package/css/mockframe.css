@@ -3332,7 +3332,7 @@
 		}
 	}
 
-	/* Superellipse body and band, drawn by the React component as an SVG: it replaces
+	/* Superellipse body and band, drawn by the React component as masked layers: it replaces
 	   the circular CSS body (`border-radius`) and band (inset `box-shadow` rings).
 	   On the iPhone Duo it sits in `.duo-panel` and `.duo-frame` instead. */
 	&.superellipse-body, & .superellipse-body {
@@ -3346,7 +3346,6 @@
 			left: 0;
 			width: 100%;
 			height: 100%;
-			overflow: visible;
 			z-index: -1;
 		}
 	}

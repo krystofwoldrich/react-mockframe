@@ -176,24 +176,43 @@ describe('superellipse screen shapes', () => {
 })
 
 describe('superellipse body and band', () => {
-  it('draws the body and band as an SVG on the band frames', () => {
+  it('draws the body and band as masked layers on the band frames', () => {
     const { container } = render(<MockFrame device="iPhone 17" color="black" />)
     const frame = container.firstElementChild as HTMLElement
     expect(frame).toHaveClass('superellipse-body')
-    const svg = frame.querySelector(':scope > svg.body')!
-    // One layer per band ring plus the glass glow, each with four corners
-    expect(svg.querySelectorAll('g[mask] > g')).toHaveLength(13)
-    expect(svg.querySelectorAll('g[mask] path')).toHaveLength(13 * 4)
-    // The mask ids are unique per frame
-    const { container: second } = render(<MockFrame device="iPhone 17" color="black" />)
-    expect(second.querySelector('mask')!.id).not.toBe(svg.querySelector('mask')!.id)
+    const body = frame.querySelector(':scope > .body') as HTMLElement
+    // The body color, three glass glow steps and one layer per band ring
+    const layers = [...body.children] as HTMLElement[]
+    expect(layers).toHaveLength(1 + 3 + 12)
+    // The rings keep their color variables, widest first, each with its own mask
+    expect(layers.slice(4).map((l) => l.style.background)).toEqual(
+      Array.from({ length: 12 }, (_, i) => `var(--mf-b${12 - i})`))
+    expect(layers[15]!.style.maskImage).toMatch(/^url\("data:image\/svg\+xml,/)
+    // The body outline is a self-contained CSS mask
+    expect(body.style.maskImage).toMatch(/^url\("data:image\/svg\+xml,/)
+  })
+
+  it('keeps url( out of the mask data, so image exporters do not rewrite it', () => {
+    for (const props of [
+      { device: 'iPhone 18 Pro', color: 'silver' },
+      { device: 'iPad Pro', color: 'silver' },
+      { device: 'iPhone Duo', color: 'night-sky', pose: 'half-open' },
+    ] as MockFrameProps[]) {
+      const { container, unmount } = render(<MockFrame {...props} />)
+      for (const el of container.querySelectorAll<HTMLElement>('.body, .body > *, .screen, .duo-wall, .duo-shade')) {
+        const mask = el.style.maskImage
+        if (mask) expect(mask.slice(4, -1)).not.toMatch(/url\(/)
+      }
+      expect(container.querySelector('.body svg, .body mask, .body filter')).toBeNull()
+      unmount()
+    }
   })
 
   it('leaves the CSS body on frames without a band', () => {
     for (const props of [{ device: 'iPhone X' }, { device: 'iPhone 8', color: 'black' }] as MockFrameProps[]) {
       const { container, unmount } = render(<MockFrame {...props} />)
       expect(container.firstElementChild).not.toHaveClass('superellipse-body')
-      expect(container.querySelector('svg.body')).toBeNull()
+      expect(container.querySelector('.body')).toBeNull()
       unmount()
     }
   })
@@ -201,20 +220,21 @@ describe('superellipse body and band', () => {
   it('draws the iPad Pro body with its four rings and glass glow', () => {
     const { container } = render(<MockFrame device="iPad Pro" color="silver" />)
     expect(container.firstElementChild).toHaveClass('superellipse-body')
-    expect(container.querySelectorAll('svg.body g[mask] > g')).toHaveLength(5)
+    expect(container.querySelector('.body')!.children).toHaveLength(1 + 3 + 4)
   })
 
   it('draws both iPhone Duo bodies, keeping the small hinge-side corners of the closed panel', () => {
     const { container, rerender } = render(<MockFrame device="iPhone Duo" color="night-sky" />)
     const panel = container.querySelector('.duo-panel')!
     expect(panel).toHaveClass('superellipse-body')
-    expect(panel.querySelectorAll(':scope > svg.body g[mask] > g')).toHaveLength(24)
+    expect(panel.querySelector(':scope > .body')!.children).toHaveLength(1 + 24)
     // The hinge side keeps a 4px circle: the body corner starts 4px from the corner
-    expect(panel.querySelector('mask path')!.getAttribute('d')).toMatch(/^M 0\.00,4\.00 /)
+    const outline = bodyCornerPaths(DUO_SCREEN_SHAPES.outer, paddingSides(DUO_BANDS.outer.padding), 0, DUO_BANDS.outer.circles)
+    expect(outline.topLeft).toMatch(/^M 0\.00,4\.00 /)
     rerender(<MockFrame device="iPhone Duo" color="night-sky" pose="open" />)
     const frame = container.querySelector('.duo-frame')!
     expect(frame).toHaveClass('superellipse-body')
-    expect(frame.querySelectorAll(':scope > svg.body g[mask] > g')).toHaveLength(18)
+    expect(frame.querySelector(':scope > .body')!.children).toHaveLength(1 + 18)
   })
 
   it('cuts the half-open side walls and shade to the open body and screen', () => {
