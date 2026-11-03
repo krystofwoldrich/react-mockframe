@@ -2328,39 +2328,67 @@
 
 	/* ===========================================
 	   			GOOGLE PIXEL 10
-	   412×924 CSS viewport (Chrome DevTools' Pixel 10 entry). Bezel, corner
-	   radii, punch-hole and buttons follow Google's specs and product renders.
+	   412x924 CSS viewport. Bezels, the band, the screen and body corners and the
+	   punch-hole are measured on Google's emulator skin (Android Studio,
+	   device-art-resources/pixel_10). Satin-finish aluminium frame (Google's tech specs).
+	   With React the screen, the body and the band are superellipses
+	   (ScreenShape.ts); the radii and inset rings here are the plain CSS version.
+	   Buttons: Google's product renders.
 	   =========================================== */
 
 	&.pixel10 {
 		width: 412px;
 		height: 924px;
-		padding: 21.5px;
-		border-radius: 74px;
+		padding: 20.86px 21.92px 21.11px 22.45px;
+		border-radius: 77.37px;
 		background: #000;
-		/* Satin aluminium frame, then the glass edge fading into the black border */
+		/* The band: metal rings, then the glass edge */
 		box-shadow:
-			inset 0 0 0 0.75px rgba(0, 0, 0, 0.3),
-			inset 0 0 2px 2.5px rgba(255, 255, 255, 0.16),
-			inset 0 0 0 6px var(--mf-frame),
-			inset 0 0 3px 7.5px #1c1c1c;
+			inset 0 0 0 0.36px var(--mf-b1),
+			inset 0 0 0 1.12px var(--mf-b2),
+			inset 0 0 0 1.5px var(--mf-b3),
+			inset 0 0 0 1.88px var(--mf-b4),
+			inset 0 0 0 2.26px var(--mf-b5),
+			inset 0 0 0 2.64px var(--mf-b6),
+			inset 0 0 0 3.02px var(--mf-b7),
+			inset 0 0 0 4.55px var(--mf-b8),
+			inset 0 0 0 4.93px var(--mf-b9),
+			inset 0 0 0 5.69px var(--mf-b10),
+			inset 0 0 0 6.07px var(--mf-b11),
+			inset 0 0 0 6.45px var(--mf-b12),
+			inset 0 0 0 6.83px var(--mf-b13),
+			inset 0 0 0 7.22px var(--mf-b14),
+			inset 0 0 0 7.6px var(--mf-b15),
+			inset 0 0 0 7.98px var(--mf-b16),
+			inset 0 0 0 8.36px var(--mf-b17),
+			inset 0 0 0 8.74px var(--mf-b18),
+			inset 0 0 0 9.12px var(--mf-b19),
+			inset 0 0 0 9.5px var(--mf-b20),
+			inset 0 0 0 9.88px var(--mf-b21),
+			inset 0 0 0 10.26px var(--mf-b22);
+
+		/* Glass edge, the same for every colour */
+		--mf-b18: #00021b; --mf-b19: #070400; --mf-b20: #3c3c3b; --mf-b21: #515151; --mf-b22: #1b1b1b;
 
 		/* Obsidian (default) */
 		--mf-frame: #4a4d4d;
+		--mf-b1: #484b4b; --mf-b2: #454848; --mf-b3: #484b4b; --mf-b4: #626464; --mf-b5: #7b7d7d; --mf-b6: #929393;
+		--mf-b7: #9fa0a0; --mf-b8: #a6a7a7; --mf-b9: #979898; --mf-b10: #8f9090; --mf-b11: #7a7c7c;
+		--mf-b12: #636565; --mf-b13: #525454; --mf-b14: #474a4a; --mf-b15: #424545; --mf-b16: #404242;
+		--mf-b17: #373939;
 
 		.screen {
-			border-radius: 50px;
+			border-radius: 55.62px;
 			box-shadow: none;
 		}
 
-		/* Punch-hole camera, centred 29px below the top of the screen */
+		/* Punch-hole camera */
 		.camera {
 			position: absolute;
-			top: 36.5px;
-			left: 50%;
-			width: 28px;
-			height: 28px;
-			margin-left: -14px;
+			top: 40px;
+			left: 213.67px;
+			width: 29.57px;
+			height: 29.57px;
 			border-radius: 50%;
 			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
 			z-index: 5;
@@ -2375,29 +2403,59 @@
 			background: var(--mf-frame);
 			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.2), inset 1px 0 1px rgba(0, 0, 0, 0.25);
 		}
-
 		.sleep { top: 269.7px; height: 75.3px; }
 		.volume { top: 390.6px; height: 131.7px; }
 
-		&.frost { --mf-frame: #d1d8ed; }
-		&.indigo { --mf-frame: #5585e0; }
-		&.lemongrass { --mf-frame: #dfe1c3; }
+		&.frost {
+			--mf-frame: #d1d8ed;
+			--mf-b1: #cbd2e7; --mf-b2: #c4cade; --mf-b3: #ccd3e7; --mf-b4: #d4dbee; --mf-b5: #d8def0; --mf-b6: #dde2f1;
+			--mf-b7: #e0e5f3; --mf-b8: #e2e6f3; --mf-b9: #dee3f2; --mf-b10: #dce1f1; --mf-b11: #d8def0;
+			--mf-b12: #d4dbee; --mf-b13: #d2d9ed; --mf-b14: #cad1e5; --mf-b15: #bec4d8; --mf-b16: #b7bdd0;
+			--mf-b17: #a0a5b6;
+		}
+		&.indigo {
+			--mf-frame: #5585e0;
+			--mf-b1: #5381da; --mf-b2: #4f7cd2; --mf-b3: #5382db; --mf-b4: #6a90e2; --mf-b5: #819ee5; --mf-b6: #96ace8;
+			--mf-b7: #a2b5ea; --mf-b8: #a9baeb; --mf-b9: #9bb0e9; --mf-b10: #93aae7; --mf-b11: #809de5;
+			--mf-b12: #6a90e2; --mf-b13: #5c88e1; --mf-b14: #5281d9; --mf-b15: #4d78cc; --mf-b16: #4a74c4;
+			--mf-b17: #3f65ac;
+		}
+		&.lemongrass {
+			--mf-frame: #dfe1c3;
+			--mf-b1: #d9dbbe; --mf-b2: #d1d3b6; --mf-b3: #dadcbe; --mf-b4: #e1e3c7; --mf-b5: #e4e6cd; --mf-b6: #e7e8d3;
+			--mf-b7: #e9ead7; --mf-b8: #eaecda; --mf-b9: #e8e9d5; --mf-b10: #e7e8d2; --mf-b11: #e4e5cd;
+			--mf-b12: #e1e3c7; --mf-b13: #e0e2c4; --mf-b14: #d8dabd; --mf-b15: #cbcdb1; --mf-b16: #c4c5ab;
+			--mf-b17: #abac95;
+		}
+		&.porcelain {
+			--mf-frame: #e8e5e1;
+			--mf-b1: #e2dfdb; --mf-b2: #d9d6d3; --mf-b3: #e3e0dc; --mf-b4: #e9e7e3; --mf-b5: #ebe9e6; --mf-b6: #eeebe8;
+			--mf-b7: #efedea; --mf-b8: #f0eeec; --mf-b9: #eeece9; --mf-b10: #edebe8; --mf-b11: #ebe9e5;
+			--mf-b12: #e9e7e3; --mf-b13: #e8e5e2; --mf-b14: #e1deda; --mf-b15: #d3d0cd; --mf-b16: #ccc9c5;
+			--mf-b17: #b2afac;
+		}
+		&.mint {
+			--mf-frame: #afdbc5;
+			--mf-b1: #aad5c0; --mf-b2: #a4cdb8; --mf-b3: #abd6c0; --mf-b4: #b5ddc9; --mf-b5: #bde1ce; --mf-b6: #c6e4d4;
+			--mf-b7: #cbe6d8; --mf-b8: #cee8db; --mf-b9: #c8e5d6; --mf-b10: #c4e4d4; --mf-b11: #bde0ce;
+			--mf-b12: #b5ddc9; --mf-b13: #b1dcc6; --mf-b14: #a9d4bf; --mf-b15: #9fc7b3; --mf-b16: #99c0ad;
+			--mf-b17: #85a896;
+		}
+		&.rose {
+			--mf-frame: #e8c4c4;
+			--mf-b1: #e2bfbf; --mf-b2: #d9b7b7; --mf-b3: #e3bfbf; --mf-b4: #e9c8c8; --mf-b5: #ebcece; --mf-b6: #eed4d4;
+			--mf-b7: #efd8d8; --mf-b8: #f0dada; --mf-b9: #eed5d5; --mf-b10: #edd3d3; --mf-b11: #ebcdcd;
+			--mf-b12: #e9c8c8; --mf-b13: #e8c5c5; --mf-b14: #e1bebe; --mf-b15: #d3b2b2; --mf-b16: #ccacac;
+			--mf-b17: #b29696;
+		}
 
-		/* Legacy colours (Pixel 8/9 finishes), kept for compatibility */
-		&.porcelain { --mf-frame: #e8e5e1; }
-		&.mint { --mf-frame: #afdbc5; }
-		&.rose { --mf-frame: #e8c4c4; }
-
-		/* Landscape: rotated counter-clockwise, camera on the left */
+		/* Landscape: turned counter-clockwise */
 		&.landscape {
 			width: 924px;
 			height: 412px;
+			padding: 21.92px 21.11px 22.45px 20.86px;
 
-			.camera {
-				top: 50%;
-				left: 36.5px;
-				margin: -14px 0 0;
-			}
+			.camera { top: 213.14px; left: 40px; }
 
 			.sleep, .volume {
 				top: -3px;
@@ -2406,7 +2464,6 @@
 				border-radius: 2px 2px 0 0;
 				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
 			}
-
 			.sleep { left: 269.7px; width: 75.3px; }
 			.volume { left: 390.6px; width: 131.7px; }
 		}
@@ -2417,41 +2474,69 @@
 	}
 
 	/* ===========================================
-	   			GOOGLE PIXEL 9 PRO, PIXEL 10 PRO
-	   427×952 CSS viewport (Chrome DevTools' Pixel 9 Pro entry; 1280×2856 at
-	   480 dpi). Both phones share the display and the 72.0×152.8 mm body
-	   (Google's tech specs), at 6.5 px/mm from the 51.3 µm pixel pitch. Screen
-	   corner radius (157 px) and punch-hole (r 49 px at 640, 102) come from the
-	   device configs (caiman, blazer). Body corner, frame band and buttons are
-	   measured on Google's product renders.
+	   			GOOGLE PIXEL 10 PRO
+	   427x952 CSS viewport. Bezels, the band, the screen and body corners and the
+	   punch-hole are measured on Google's emulator skin (Android Studio,
+	   device-art-resources/pixel_10_pro). Polished aluminium frame (Google's tech specs).
+	   With React the screen, the body and the band are superellipses
+	   (ScreenShape.ts); the radii and inset rings here are the plain CSS version.
+	   Buttons: Google's product renders.
 	   =========================================== */
 
-	&.pixel9pro, &.pixel10pro {
+	&.pixel10pro {
 		width: 427px;
 		height: 952px;
-		padding: 20.43px 20.42px;
-		border-radius: 78.75px;
+		padding: 19.82px 20.22px 17.33px 19.66px;
+		border-radius: 79.19px;
 		background: #000;
-		/* Polished aluminium frame, then the glass edge fading into the black border */
+		/* The band: metal rings, then the glass edge */
 		box-shadow:
-			inset 0 0 0 0.75px rgba(0, 0, 0, 0.3),
-			inset 0 0 2px 2.5px rgba(255, 255, 255, 0.18),
-			inset 0 0 0 6.5px var(--mf-frame),
-			inset 0 0 3px 8px #1c1c1c;
+			inset 0 0 0 0.33px var(--mf-b1),
+			inset 0 0 0 0.66px var(--mf-b2),
+			inset 0 0 0 0.99px var(--mf-b3),
+			inset 0 0 0 1.33px var(--mf-b4),
+			inset 0 0 0 1.66px var(--mf-b5),
+			inset 0 0 0 1.99px var(--mf-b6),
+			inset 0 0 0 2.66px var(--mf-b7),
+			inset 0 0 0 4.99px var(--mf-b8),
+			inset 0 0 0 5.66px var(--mf-b9),
+			inset 0 0 0 5.99px var(--mf-b10),
+			inset 0 0 0 6.33px var(--mf-b11),
+			inset 0 0 0 6.66px var(--mf-b12),
+			inset 0 0 0 6.99px var(--mf-b13),
+			inset 0 0 0 7.33px var(--mf-b14),
+			inset 0 0 0 7.66px var(--mf-b15),
+			inset 0 0 0 7.99px var(--mf-b16),
+			inset 0 0 0 8.33px var(--mf-b17),
+			inset 0 0 0 8.66px var(--mf-b18),
+			inset 0 0 0 8.99px var(--mf-b19),
+			inset 0 0 0 9.33px var(--mf-b20),
+			inset 0 0 0 9.66px var(--mf-b21),
+			inset 0 0 0 9.99px var(--mf-b22),
+			inset 0 0 0 10.33px var(--mf-b23);
+
+		/* Glass edge, the same for every colour */
+		--mf-b19: #000000; --mf-b20: #141413; --mf-b21: #4d4d4d; --mf-b22: #3f3f3f; --mf-b23: #1a1a1a;
+
+		/* Obsidian (default) */
+		--mf-frame: #434643;
+		--mf-b1: #444644; --mf-b2: #3c3f3c; --mf-b3: #343634; --mf-b4: #3b3d3b; --mf-b5: #575957; --mf-b6: #aeafae;
+		--mf-b7: #cfcfcf; --mf-b8: #e6e6e6; --mf-b9: #c4c4c4; --mf-b10: #adadad; --mf-b11: #969796;
+		--mf-b12: #848684; --mf-b13: #737573; --mf-b14: #484a48; --mf-b15: #3d403d; --mf-b16: #383b38;
+		--mf-b17: #323432; --mf-b18: #1f211f;
 
 		.screen {
-			border-radius: 52.33px;
+			border-radius: 59.64px;
 			box-shadow: none;
 		}
 
-		/* Punch-hole camera, centred 34px below the top of the screen */
+		/* Punch-hole camera */
 		.camera {
 			position: absolute;
-			top: 38.09px;
-			left: 50%;
-			width: 32.67px;
-			height: 32.67px;
-			margin-left: -16.33px;
+			top: 38.92px;
+			left: 217.93px;
+			width: 30.47px;
+			height: 30.47px;
 			border-radius: 50%;
 			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
 			z-index: 5;
@@ -2466,17 +2551,38 @@
 			background: var(--mf-frame);
 			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.25), inset 1px 0 1px rgba(0, 0, 0, 0.25);
 		}
+		.sleep { top: 276.01px; height: 77.44px; }
+		.volume { top: 399.13px; height: 137.01px; }
 
-		/* Landscape: rotated counter-clockwise, camera on the left */
+		&.porcelain {
+			--mf-frame: #f1ebe4;
+			--mf-b1: #f1ebe4; --mf-b2: #dbd5cf; --mf-b3: #c1bcb7; --mf-b4: #d7d2cb; --mf-b5: #f2ece5; --mf-b6: #f7f3ef;
+			--mf-b7: #faf7f5; --mf-b8: #fcfbf9; --mf-b9: #f8f6f3; --mf-b10: #f6f3ef; --mf-b11: #f5f0ec;
+			--mf-b12: #f4efe9; --mf-b13: #f3eee8; --mf-b14: #f1ebe4; --mf-b15: #ddd8d1; --mf-b16: #d0cac4;
+			--mf-b17: #bbb7b1; --mf-b18: #817e7a;
+		}
+		&.moonstone {
+			--mf-frame: #7d8291;
+			--mf-b1: #7d8291; --mf-b2: #717583; --mf-b3: #636773; --mf-b4: #6f7381; --mf-b5: #868a98; --mf-b6: #bec0c6;
+			--mf-b7: #d7d8dc; --mf-b8: #eaebec; --mf-b9: #cfd0d4; --mf-b10: #bdbfc5; --mf-b11: #acafb7;
+			--mf-b12: #a0a3ad; --mf-b13: #9599a4; --mf-b14: #7f8492; --mf-b15: #727785; --mf-b16: #6b6f7c;
+			--mf-b17: #606470; --mf-b18: #40434b;
+		}
+		&.jade {
+			--mf-frame: #d9e9ca;
+			--mf-b1: #d9e9ca; --mf-b2: #c5d3b7; --mf-b3: #aebba1; --mf-b4: #c2d0b4; --mf-b5: #dbeacc; --mf-b6: #e9f2e1;
+			--mf-b7: #f1f7ec; --mf-b8: #f7faf5; --mf-b9: #eef5e8; --mf-b10: #e8f2e0; --mf-b11: #e4efda;
+			--mf-b12: #e1edd5; --mf-b13: #deecd1; --mf-b14: #d9e9cb; --mf-b15: #c7d6b9; --mf-b16: #bbc9ae;
+			--mf-b17: #a9b59d; --mf-b18: #747d6b;
+		}
+
+		/* Landscape: turned counter-clockwise */
 		&.landscape {
 			width: 952px;
 			height: 427px;
+			padding: 20.22px 17.33px 19.66px 19.82px;
 
-			.camera {
-				top: 50%;
-				left: 38.09px;
-				margin: -16.33px 0 0;
-			}
+			.camera { top: 218.48px; left: 38.92px; }
 
 			.sleep, .volume {
 				top: -3px;
@@ -2485,6 +2591,8 @@
 				border-radius: 2px 2px 0 0;
 				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
 			}
+			.sleep { left: 276.01px; width: 77.44px; }
+			.volume { left: 399.13px; width: 137.01px; }
 		}
 
 		.top-bar, .bottom-bar, .sensor, .speaker, .sensors, .more-sensors, .inner-shadow, .home, .inner {
@@ -2492,87 +2600,149 @@
 		}
 	}
 
-	/* Frame colours are Google Store swatches (archived 2025 for the Pixel 9 Pro) */
+	/* ===========================================
+	   			GOOGLE PIXEL 9 PRO
+	   427x952 CSS viewport. Bezels, the band, the screen and body corners and the
+	   punch-hole are measured on Google's emulator skin (Android Studio,
+	   device-art-resources/pixel_9_pro). Polished aluminium frame (Google's tech specs).
+	   With React the screen, the body and the band are superellipses
+	   (ScreenShape.ts); the radii and inset rings here are the plain CSS version.
+	   Buttons: Google's product renders.
+	   =========================================== */
+
 	&.pixel9pro {
+		width: 427px;
+		height: 952px;
+		padding: 20.24px 20.01px 18.98px 19.87px;
+		border-radius: 79.15px;
+		background: #000;
+		/* The band: metal rings, then the glass edge */
+		box-shadow:
+			inset 0 0 0 0.2px var(--mf-b1),
+			inset 0 0 0 0.53px var(--mf-b2),
+			inset 0 0 0 0.87px var(--mf-b3),
+			inset 0 0 0 1.2px var(--mf-b4),
+			inset 0 0 0 1.53px var(--mf-b5),
+			inset 0 0 0 1.87px var(--mf-b6),
+			inset 0 0 0 2.2px var(--mf-b7),
+			inset 0 0 0 2.53px var(--mf-b8),
+			inset 0 0 0 4.53px var(--mf-b9),
+			inset 0 0 0 4.87px var(--mf-b10),
+			inset 0 0 0 5.2px var(--mf-b11),
+			inset 0 0 0 5.53px var(--mf-b12),
+			inset 0 0 0 5.87px var(--mf-b13),
+			inset 0 0 0 6.2px var(--mf-b14),
+			inset 0 0 0 6.53px var(--mf-b15),
+			inset 0 0 0 7.2px var(--mf-b16),
+			inset 0 0 0 7.53px var(--mf-b17),
+			inset 0 0 0 7.87px var(--mf-b18),
+			inset 0 0 0 8.2px var(--mf-b19),
+			inset 0 0 0 8.53px var(--mf-b20),
+			inset 0 0 0 8.87px var(--mf-b21),
+			inset 0 0 0 9.2px var(--mf-b22);
+
+		/* Glass edge, the same for every colour */
+		--mf-b18: #050505; --mf-b19: #030303; --mf-b20: #414141; --mf-b21: #757575; --mf-b22: #4d4d4d;
+
 		/* Obsidian (default) */
 		--mf-frame: #343434;
+		--mf-b1: #eeeeee; --mf-b2: #959595; --mf-b3: #333333; --mf-b4: #2b2b2b; --mf-b5: #313131; --mf-b6: #414141;
+		--mf-b7: #5e5e5e; --mf-b8: #7b7b7b; --mf-b9: #929292; --mf-b10: #717171; --mf-b11: #5a5a5a;
+		--mf-b12: #434343; --mf-b13: #343434; --mf-b14: #303030; --mf-b15: #272727; --mf-b16: #1e1e1e;
+		--mf-b17: #171717;
 
-		&.porcelain { --mf-frame: #f5f1ec; }
-		&.hazel { --mf-frame: #949997; }
-		&.rose-quartz { --mf-frame: #f4ddec; }
+		.screen {
+			border-radius: 67.11px;
+			box-shadow: none;
+		}
 
+		/* Punch-hole camera */
+		.camera {
+			position: absolute;
+			top: 38.5px;
+			left: 217.91px;
+			width: 30.93px;
+			height: 30.93px;
+			border-radius: 50%;
+			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
+			z-index: 5;
+		}
+
+		/* Power, then the volume rocker, both on the right */
+		.sleep, .volume {
+			position: absolute;
+			right: -3px;
+			width: 3px;
+			border-radius: 0 2px 2px 0;
+			background: var(--mf-frame);
+			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.25), inset 1px 0 1px rgba(0, 0, 0, 0.25);
+		}
 		.sleep { top: 270.06px; height: 79.43px; }
 		.volume { top: 397.14px; height: 144.96px; }
 
+		&.porcelain {
+			--mf-frame: #f5f1ec;
+			--mf-b1: #fefdfc; --mf-b2: #f8f5f1; --mf-b3: #f0ece7; --mf-b4: #d3d0cc; --mf-b5: #e8e4df; --mf-b6: #f5f1ec;
+			--mf-b7: #f6f2ee; --mf-b8: #f7f3ef; --mf-b9: #f8f5f1; --mf-b10: #f6f3ef; --mf-b11: #f6f2ed;
+			--mf-b12: #f5f1ec; --mf-b13: #f5f1ec; --mf-b14: #e3e0db; --mf-b15: #c1beba; --mf-b16: #9f9d99;
+			--mf-b17: #83817e;
+		}
+		&.hazel {
+			--mf-frame: #949997;
+			--mf-b1: #f3f3f3; --mf-b2: #babdbc; --mf-b3: #919694; --mf-b4: #7f8382; --mf-b5: #8c918f; --mf-b6: #979c9a;
+			--mf-b7: #a0a5a3; --mf-b8: #acb0af; --mf-b9: #b8bbba; --mf-b10: #a8acaa; --mf-b11: #9fa3a1;
+			--mf-b12: #979c9a; --mf-b13: #949997; --mf-b14: #898e8c; --mf-b15: #747876; --mf-b16: #5e6260;
+			--mf-b17: #4d504f;
+		}
+		&.rose-quartz {
+			--mf-frame: #f4ddec;
+			--mf-b1: #fdfafc; --mf-b2: #f7e7f1; --mf-b3: #efd8e7; --mf-b4: #d3bfcc; --mf-b5: #e7d1df; --mf-b6: #f4deec;
+			--mf-b7: #f5e0ee; --mf-b8: #f6e3ef; --mf-b9: #f7e7f1; --mf-b10: #f6e2ef; --mf-b11: #f5e0ed;
+			--mf-b12: #f4deec; --mf-b13: #f4ddec; --mf-b14: #e2cddb; --mf-b15: #c0aeba; --mf-b16: #9f8f99;
+			--mf-b17: #83767e;
+		}
+
+		/* Landscape: turned counter-clockwise */
 		&.landscape {
+			width: 952px;
+			height: 427px;
+			padding: 20.01px 18.98px 19.87px 20.24px;
+
+			.camera { top: 218.05px; left: 38.5px; }
+
+			.sleep, .volume {
+				top: -3px;
+				right: auto;
+				height: 3px;
+				border-radius: 2px 2px 0 0;
+				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+			}
 			.sleep { left: 270.06px; width: 79.43px; }
 			.volume { left: 397.14px; width: 144.96px; }
 		}
-	}
 
-	&.pixel10pro {
-		/* Obsidian (default) */
-		--mf-frame: #434643;
-
-		&.porcelain { --mf-frame: #f1ebe4; }
-		&.moonstone { --mf-frame: #7d8291; }
-		&.jade { --mf-frame: #d9e9ca; }
-
-		.sleep { top: 276.01px; height: 77.44px; }
-		.volume { top: 399.13px; height: 137.01px; }
-
-		&.landscape {
-			.sleep { left: 276.01px; width: 77.44px; }
-			.volume { left: 399.13px; width: 137.01px; }
+		.top-bar, .bottom-bar, .sensor, .speaker, .sensors, .more-sensors, .inner-shadow, .home, .inner {
+			display: none;
 		}
 	}
 
 	/* ===========================================
 	   		GOOGLE PIXEL 9 PRO FOLD, PIXEL 10 PRO FOLD
-	   Closed: the outer display. 9 Pro Fold 412×922 (Chrome DevTools, DPR 2.625);
-	   10 Pro Fold 412×901 (1080×2364 at the same DPR). Open: the 2076×2152
-	   inner display at 390 dpi (device configs comet, rango) = 852×883. Bodies
-	   are Google's folded / unfolded mm at each display's px per mm (from its
-	   PPI); the bezels are equal on all sides and the rest of the closed width
-	   is the hinge, on the left. Screen corner radii (outer 115 px, inner 85 px)
-	   and punch-holes come from the device configs. Buttons on the right, and
-	   the hinge marks of the open device, are measured on Google's renders.
+	   Shared by both Folds. Each Fold's block below has its sizes, band,
+	   hinge side and colours, for the closed (outer) and the open (inner) display.
 	   =========================================== */
 
 	&.pixel9profold, &.pixel10profold {
-		background: #000;
-		box-shadow:
-			inset 0 0 0 0.75px rgba(0, 0, 0, 0.3),
-			inset 0 0 2px 2.5px rgba(255, 255, 255, 0.18),
-			inset 0 0 0 5.5px var(--mf-frame),
-			inset 0 0 3px 7px #1c1c1c;
-
 		.screen {
 			box-shadow: none;
 		}
 
 		.camera {
 			position: absolute;
+			margin: 0;
 			border-radius: 50%;
 			background: radial-gradient(circle at 50% 50%, #2a2c3c 0, #15161f 22%, #2b2b2e 38%, #0b0b0c 50%, #000 70%);
 			z-index: 5;
-		}
-
-		/* Hinge, seen from the outer display's side: a frame-coloured spine on the left.
-		   It covers the whole body (so it follows the body's corners) and only its
-		   first --mf-spine px are painted. */
-		.spine {
-			position: absolute;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			border-radius: inherit;
-			background:
-				linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.55))
-					0 0 / var(--mf-spine) 100% no-repeat,
-				linear-gradient(var(--mf-frame), var(--mf-frame)) 0 0 / var(--mf-spine) 100% no-repeat;
-			z-index: 1;
 		}
 
 		/* Hinge marks at the fold, top and bottom (open only) */
@@ -2596,34 +2766,16 @@
 			width: 3px;
 			border-radius: 0 2px 2px 0;
 			background: var(--mf-frame);
-			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.25), inset 1px 0 1px rgba(0, 0, 0, 0.25);
+			box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.2), inset 1px 0 1px rgba(0, 0, 0, 0.25);
 		}
 
-		/* Closed (default): outer display */
-		.screen {
-			border-radius: 43.81px;
-		}
-
+		/* Open: the inner display */
 		&.fold-open {
 			width: 852px;
 			height: 883px;
-			border-radius: 60.88px;
-
-			.screen {
-				border-radius: 34.87px;
-			}
-
-			.spine {
-				display: none;
-			}
 
 			.hinge {
 				display: block;
-			}
-
-			.camera {
-				left: auto;
-				margin: 0;
 			}
 
 			.sleep { top: 273.03px; height: 88.83px; }
@@ -2637,14 +2789,7 @@
 				right: auto;
 				height: 3px;
 				border-radius: 2px 2px 0 0;
-				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
-			}
-
-			.spine {
-				background:
-					linear-gradient(to top, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.55))
-						0 100% / 100% var(--mf-spine) no-repeat,
-					linear-gradient(var(--mf-frame), var(--mf-frame)) 0 100% / 100% var(--mf-spine) no-repeat;
+				box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
 			}
 
 			.hinge {
@@ -2665,121 +2810,410 @@
 			}
 		}
 
+		/* With React the open body has Google's hinge gaps (FrameBody), so these marks are not drawn */
+		&.fold-open.superellipse-body .hinge {
+			display: none;
+		}
+
 		.top-bar, .bottom-bar, .sensor, .speaker, .sensors, .more-sensors, .inner-shadow, .home, .inner {
 			display: none;
 		}
 	}
 
+	/* ===========================================
+	   			GOOGLE PIXEL 9 PRO FOLD
+	   Closed: the 412x924 outer display (1080 px wide at 420 dpi). Open: the
+	   852x883 inner display (2076x2152 at 390 dpi). Bezels, the band, the hinge
+	   side, the screen and body corners and the punch-hole are measured on
+	   Google's emulator skins (Android Studio, device-art-resources/pixel_9_pro_fold).
+	   Satin-finish aluminium frame (Google's tech specs). With React the screen, the body and
+	   the band are superellipses (ScreenShape.ts); the radii and inset rings here
+	   are the plain CSS version. Buttons and hinge marks: Google's product renders.
+	   =========================================== */
+
 	&.pixel9profold {
-		/* Obsidian (default); Pixel 9 Pro swatches, the Fold has the same two finishes */
-		--mf-frame: #343434;
-
-		&.porcelain { --mf-frame: #f5f1ec; }
-
-		/* Closed */
+		/* Closed (default): the outer display; the hinge is on the left */
 		width: 412px;
-		height: 922px;
-		padding: 30.15px 30.15px 30.15px 45.84px;
-		border-radius: 73.96px;
+		height: 924px;
+		padding: 26.49px 23.49px 22.85px 35.78px;
+		border-radius: 11.44px 79.96px 79.96px 11.44px;
+		/* Set through variables, so the superellipse body (React) can turn them off in every pose */
+		background: var(--mf-bg);
+		box-shadow: var(--mf-shadow);
+		--mf-bg: #1a1a1a;
+		/* Hinge side strips, then the band: metal rings, then the glass edge */
+		--mf-shadow:
+			inset 0.35px 0 0 0 var(--mf-h1),
+			inset 0.73px 0 0 0 var(--mf-h2),
+			inset 1.11px 0 0 0 var(--mf-h3),
+			inset 1.49px 0 0 0 var(--mf-h4),
+			inset 1.87px 0 0 0 var(--mf-h5),
+			inset 2.26px 0 0 0 var(--mf-h6),
+			inset 3.4px 0 0 0 var(--mf-h7),
+			inset 3.78px 0 0 0 var(--mf-h8),
+			inset 4.16px 0 0 0 var(--mf-h9),
+			inset 4.92px 0 0 0 var(--mf-h10),
+			inset 5.68px 0 0 0 var(--mf-h11),
+			inset 19.02px 0 0 0 var(--mf-h12),
+			inset 19.4px 0 0 0 var(--mf-h13),
+			inset 0 0 0 0.64px var(--mf-b1),
+			inset 0 0 0 1.4px var(--mf-b2),
+			inset 0 0 0 1.78px var(--mf-b3),
+			inset 0 0 0 2.16px var(--mf-b4),
+			inset 0 0 0 2.54px var(--mf-b5),
+			inset 0 0 0 2.92px var(--mf-b6),
+			inset 0 0 0 3.3px var(--mf-b7),
+			inset 0 0 0 4.45px var(--mf-b8),
+			inset 0 0 0 4.83px var(--mf-b9),
+			inset 0 0 0 5.21px var(--mf-b10),
+			inset 0 0 0 5.59px var(--mf-b11),
+			inset 0 0 0 5.97px var(--mf-b12),
+			inset 0 0 0 7.49px var(--mf-b13),
+			inset 0 0 0 7.87px var(--mf-b14),
+			inset 0 0 0 8.26px var(--mf-b15),
+			inset 0 0 0 8.64px var(--mf-b16),
+			inset 0 0 0 9.02px var(--mf-b17),
+			inset 0 0 0 9.4px var(--mf-g1),
+			inset 0 0 0 9.78px var(--mf-g2),
+			inset 0 0 0 10.16px var(--mf-g3),
+			inset 0 0 0 10.54px var(--mf-g4);
 
-		--mf-spine: 15.69px;
+		/* Glass edge, the same for every colour */
+		--mf-g1: #0a0a0a; --mf-g2: #010101; --mf-g3: #1d1d1d; --mf-g4: #2c2c2c; --mf-o8: #1e1e1d; --mf-o9: #0f1010;
 
-		.camera {
-			top: 47.1px;
-			left: 235.74px;
-			width: 31.62px;
-			height: 31.62px;
+		/* Obsidian (default) */
+		--mf-frame: #343434;
+		--mf-b1: #2b2b2b; --mf-b2: #2d2d2d; --mf-b3: #2e2e2e; --mf-b4: #303030; --mf-b5: #333333; --mf-b6: #6f6f6f;
+		--mf-b7: #919191; --mf-b8: #a3a3a3; --mf-b9: #949494; --mf-b10: #828282; --mf-b11: #6c6c6c;
+		--mf-b12: #4a4a4a; --mf-b13: #323232; --mf-b14: #313131; --mf-b15: #313131; --mf-b16: #313131;
+		--mf-b17: #303030; --mf-h1: #252525; --mf-h2: #2a2a2a; --mf-h3: #2b2b2b; --mf-h4: #2d2d2d; --mf-h5: #303030;
+		--mf-h6: #545454; --mf-h7: #777777; --mf-h8: #5e5e5e; --mf-h9: #414141; --mf-h10: #333333; --mf-h11: #313131;
+		--mf-h12: #303030; --mf-h13: #323232; --mf-o1: #a4a4a4; --mf-o2: #2b2b2b; --mf-o3: #2e2e2e; --mf-o4: #2c2c2c;
+		--mf-o5: #2a2a2a; --mf-o6: #282828; --mf-o7: #262626;
+
+		.screen {
+			border-radius: 62.42px;
+			box-shadow: none;
 		}
+
+		.camera { top: 43.16px; left: 226.25px; width: 31.07px; height: 31.07px; }
 
 		.sleep { top: 286.83px; height: 93.32px; }
 		.volume { top: 442.03px; height: 128.68px; }
 
 		.hinge { width: 43px; margin-left: -21.5px; }
 
-		&.fold-open {
-			padding: 26.01px 26.45px;
-
-			.camera {
-				top: 42.63px;
-				left: 825.63px;
-				width: 32.41px;
-				height: 32.41px;
-			}
+		&.porcelain {
+			--mf-frame: #f5f1ec;
+			--mf-b1: #d3cfcb; --mf-b2: #d9d6d1; --mf-b3: #dedad6; --mf-b4: #e5e1dd; --mf-b5: #f3efea; --mf-b6: #f6f3ef;
+			--mf-b7: #f8f5f1; --mf-b8: #f8f6f3; --mf-b9: #f8f5f1; --mf-b10: #f7f4f0; --mf-b11: #f6f3ee;
+			--mf-b12: #f5f2ed; --mf-b13: #ede9e4; --mf-b14: #eae6e2; --mf-b15: #e8e5e0; --mf-b16: #e9e5e1;
+			--mf-b17: #e7e3df; --mf-h1: #bcb9b5; --mf-h2: #cdcac6; --mf-h3: #d3cfcb; --mf-h4: #d9d6d1; --mf-h5: #e6e2dd;
+			--mf-h6: #f6f2ed; --mf-h7: #f7f3ef; --mf-h8: #f6f2ee; --mf-h9: #f5f1ec; --mf-h10: #f0ece7; --mf-h11: #ebe7e2;
+			--mf-h12: #e7e3df; --mf-h13: #ece9e4; --mf-o1: #f9f6f3; --mf-o2: #d2ceca; --mf-o3: #dedad6; --mf-o4: #d4d0cc;
+			--mf-o5: #cecbc7; --mf-o6: #c6c3bf; --mf-o7: #bfbcb8;
 		}
 
+		/* Open: the inner display */
+		&.fold-open {
+			padding: 25.25px 25.28px 24.4px 25.32px;
+			border-radius: 76.75px;
+			--mf-bg: #000;
+			--mf-shadow:
+				inset 0 0 0 0.3px var(--mf-o1),
+				inset 0 0 0 0.71px var(--mf-o2),
+				inset 0 0 0 1.12px var(--mf-o3),
+				inset 0 0 0 1.53px var(--mf-o4),
+				inset 0 0 0 2.76px var(--mf-o5),
+				inset 0 0 0 3.17px var(--mf-o6),
+				inset 0 0 0 4.81px var(--mf-o7),
+				inset 0 0 0 5.22px var(--mf-o8),
+				inset 0 0 0 5.63px var(--mf-o9);
+
+			.screen { border-radius: 52.72px; }
+
+			.camera { top: 42.17px; left: 826.07px; width: 30.74px; height: 30.74px; }
+		}
+
+		/* Landscape: turned counter-clockwise, the hinge at the bottom */
 		&.landscape {
-			width: 922px;
+			width: 924px;
 			height: 412px;
-			padding: 30.15px 30.15px 45.84px;
+			padding: 23.49px 22.85px 35.78px 26.49px;
+			border-radius: 79.96px 79.96px 11.44px 11.44px;
+			--mf-shadow:
+				inset 0 -0.35px 0 0 var(--mf-h1),
+				inset 0 -0.73px 0 0 var(--mf-h2),
+				inset 0 -1.11px 0 0 var(--mf-h3),
+				inset 0 -1.49px 0 0 var(--mf-h4),
+				inset 0 -1.87px 0 0 var(--mf-h5),
+				inset 0 -2.26px 0 0 var(--mf-h6),
+				inset 0 -3.4px 0 0 var(--mf-h7),
+				inset 0 -3.78px 0 0 var(--mf-h8),
+				inset 0 -4.16px 0 0 var(--mf-h9),
+				inset 0 -4.92px 0 0 var(--mf-h10),
+				inset 0 -5.68px 0 0 var(--mf-h11),
+				inset 0 -19.02px 0 0 var(--mf-h12),
+				inset 0 -19.4px 0 0 var(--mf-h13),
+				inset 0 0 0 0.64px var(--mf-b1),
+				inset 0 0 0 1.4px var(--mf-b2),
+				inset 0 0 0 1.78px var(--mf-b3),
+				inset 0 0 0 2.16px var(--mf-b4),
+				inset 0 0 0 2.54px var(--mf-b5),
+				inset 0 0 0 2.92px var(--mf-b6),
+				inset 0 0 0 3.3px var(--mf-b7),
+				inset 0 0 0 4.45px var(--mf-b8),
+				inset 0 0 0 4.83px var(--mf-b9),
+				inset 0 0 0 5.21px var(--mf-b10),
+				inset 0 0 0 5.59px var(--mf-b11),
+				inset 0 0 0 5.97px var(--mf-b12),
+				inset 0 0 0 7.49px var(--mf-b13),
+				inset 0 0 0 7.87px var(--mf-b14),
+				inset 0 0 0 8.26px var(--mf-b15),
+				inset 0 0 0 8.64px var(--mf-b16),
+				inset 0 0 0 9.02px var(--mf-b17),
+				inset 0 0 0 9.4px var(--mf-g1),
+				inset 0 0 0 9.78px var(--mf-g2),
+				inset 0 0 0 10.16px var(--mf-g3),
+				inset 0 0 0 10.54px var(--mf-g4);
 
-			.camera { top: 220.63px; left: 47.1px; }
-
+			.camera { top: 213.96px; left: 43.16px; }
 			.sleep { left: 286.83px; width: 93.32px; }
 			.volume { left: 442.03px; width: 128.68px; }
 
 			.hinge { height: 43px; margin: -21.5px 0 0; }
 
 			&.fold-open {
-				padding: 26.45px 26.01px;
+				padding: 25.28px 24.4px 25.32px 25.25px;
+				border-radius: 76.75px;
+				--mf-shadow:
+					inset 0 0 0 0.3px var(--mf-o1),
+					inset 0 0 0 0.71px var(--mf-o2),
+					inset 0 0 0 1.12px var(--mf-o3),
+					inset 0 0 0 1.53px var(--mf-o4),
+					inset 0 0 0 2.76px var(--mf-o5),
+					inset 0 0 0 3.17px var(--mf-o6),
+					inset 0 0 0 4.81px var(--mf-o7),
+					inset 0 0 0 5.22px var(--mf-o8),
+					inset 0 0 0 5.63px var(--mf-o9);
 
-				.camera { top: 46.86px; left: 42.63px; }
+				.screen { border-radius: 52.72px; }
+
+				.camera { top: 45.79px; left: 42.17px; }
 			}
 		}
 	}
 
+	/* ===========================================
+	   			GOOGLE PIXEL 10 PRO FOLD
+	   Closed: the 412x901 outer display (1080 px wide at 420 dpi). Open: the
+	   852x883 inner display (2076x2152 at 390 dpi). Bezels, the band, the hinge
+	   side, the screen and body corners and the punch-hole are measured on
+	   Google's emulator skins (Android Studio, device-art-resources/pixel_10_pro_fold).
+	   Satin-finish aluminium frame (Google's tech specs). With React the screen, the body and
+	   the band are superellipses (ScreenShape.ts); the radii and inset rings here
+	   are the plain CSS version. Buttons and hinge marks: Google's product renders.
+	   =========================================== */
+
 	&.pixel10profold {
-		/* Moonstone (default) */
-		--mf-frame: #7d8291;
-
-		&.jade { --mf-frame: #d9e9ca; }
-
-		/* Closed */
+		/* Closed (default): the outer display; the hinge is on the left */
 		width: 412px;
 		height: 901px;
-		padding: 24.35px 24.35px 24.35px 30.54px;
-		border-radius: 68.16px;
+		padding: 24.98px 24.87px 24.69px 31.6px;
+		border-radius: 24.37px 78.18px 78.18px 24.37px;
+		/* Set through variables, so the superellipse body (React) can turn them off in every pose */
+		background: var(--mf-bg);
+		box-shadow: var(--mf-shadow);
+		--mf-bg: #000;
+		/* Hinge side strips, then the band: metal rings, then the glass edge */
+		--mf-shadow:
+			inset 1.12px 0 0 0 var(--mf-h1),
+			inset 1.5px 0 0 0 var(--mf-h2),
+			inset 1.89px 0 0 0 var(--mf-h3),
+			inset 2.27px 0 0 0 var(--mf-h4),
+			inset 3.41px 0 0 0 var(--mf-h5),
+			inset 3.79px 0 0 0 var(--mf-h6),
+			inset 4.17px 0 0 0 var(--mf-h7),
+			inset 4.55px 0 0 0 var(--mf-h8),
+			inset 6.08px 0 0 0 var(--mf-h9),
+			inset 6.46px 0 0 0 var(--mf-h10),
+			inset 6.84px 0 0 0 var(--mf-h11),
+			inset 7.22px 0 0 0 var(--mf-h12),
+			inset 7.6px 0 0 0 var(--mf-h13),
+			inset 7.98px 0 0 0 var(--mf-h14),
+			inset 8.36px 0 0 0 var(--mf-h15),
+			inset 8.74px 0 0 0 var(--mf-h16),
+			inset 9.12px 0 0 0 var(--mf-h17),
+			inset 9.5px 0 0 0 var(--mf-h18),
+			inset 9.89px 0 0 0 var(--mf-h19),
+			inset 10.27px 0 0 0 var(--mf-h20),
+			inset 12.17px 0 0 0 var(--mf-h21),
+			inset 12.55px 0 0 0 var(--mf-h22),
+			inset 13.31px 0 0 0 var(--mf-h23),
+			inset 15.22px 0 0 0 var(--mf-h24),
+			inset 15.6px 0 0 0 var(--mf-h25),
+			inset 15.98px 0 0 0 var(--mf-h26),
+			inset 16.36px 0 0 0 var(--mf-h27),
+			inset 0 0 0 0.11px var(--mf-b1),
+			inset 0 0 0 1.25px var(--mf-b2),
+			inset 0 0 0 1.63px var(--mf-b3),
+			inset 0 0 0 2.02px var(--mf-b4),
+			inset 0 0 0 2.4px var(--mf-b5),
+			inset 0 0 0 2.78px var(--mf-b6),
+			inset 0 0 0 3.16px var(--mf-b7),
+			inset 0 0 0 3.54px var(--mf-b8),
+			inset 0 0 0 5.06px var(--mf-b9),
+			inset 0 0 0 6.21px var(--mf-b10),
+			inset 0 0 0 7.35px var(--mf-b11),
+			inset 0 0 0 8.11px var(--mf-b12),
+			inset 0 0 0 8.49px var(--mf-g1),
+			inset 0 0 0 8.87px var(--mf-g2),
+			inset 0 0 0 9.25px var(--mf-g3),
+			inset 0 0 0 9.63px var(--mf-g4);
 
-		--mf-spine: 6.19px;
+		/* Glass edge, the same for every colour */
+		--mf-g1: #6f7382; --mf-g2: #262936; --mf-g3: #222222; --mf-g4: #141516; --mf-o12: #121314;
 
-		.camera {
-			top: 40.35px;
-			left: 221.78px;
-			width: 28.57px;
-			height: 28.57px;
+		/* Moonstone (default) */
+		--mf-frame: #7d8291;
+		--mf-b1: #686c79; --mf-b2: #707482; --mf-b3: #757a88; --mf-b4: #7a7f8d; --mf-b5: #7d8291; --mf-b6: #9498a3;
+		--mf-b7: #9c9fa9; --mf-b8: #a8abb3; --mf-b9: #b1b3ba; --mf-b10: #abaeb6; --mf-b11: #acaeb6;
+		--mf-b12: #aeb0b8; --mf-h1: #a8aab3; --mf-h2: #9c9fa9; --mf-h3: #6b707d; --mf-h4: #676b77; --mf-h5: #6b6f7c;
+		--mf-h6: #9195a0; --mf-h7: #aaacb4; --mf-h8: #b1b3bb; --mf-h9: #b6b8bf; --mf-h10: #aaadb5; --mf-h11: #a0a3ac;
+		--mf-h12: #7b808f; --mf-h13: #5e626e; --mf-h14: #6e7380; --mf-h15: #747886; --mf-h16: #7a7f8e;
+		--mf-h17: #838896; --mf-h18: #8a8e9b; --mf-h19: #9a9ea8; --mf-h20: #a1a4ad; --mf-h21: #aeb0b8;
+		--mf-h22: #a8abb3; --mf-h23: #a2a5ae; --mf-h24: #9ea1ab; --mf-h25: #7b808f; --mf-h26: #5e626e;
+		--mf-h27: #636874; --mf-o1: #888c99; --mf-o2: #b8bac0; --mf-o3: #b4b6bd; --mf-o4: #afb2b9; --mf-o5: #a5a7b0;
+		--mf-o6: #a9abb4; --mf-o7: #b0b2ba; --mf-o8: #a2a5ae; --mf-o9: #868b98; --mf-o10: #6b6f7c; --mf-o11: #5e626e;
+
+		.screen {
+			border-radius: 49.14px 52.19px 49.14px 49.14px;
+			box-shadow: none;
 		}
+
+		.camera { top: 42.14px; left: 224.77px; width: 25.67px; height: 25.67px; }
 
 		.sleep { top: 277.31px; height: 90.22px; }
 		.volume { top: 427.37px; height: 124.41px; }
 
 		.hinge { width: 49px; margin-left: -24.5px; }
 
-		&.fold-open {
-			padding: 26.01px 27.05px;
-
-			.camera {
-				top: 42.63px;
-				left: 826.23px;
-				width: 32.41px;
-				height: 32.41px;
-			}
+		&.jade {
+			--mf-frame: #d9e9ca;
+			--mf-b1: #b6c4aa; --mf-b2: #c3d1b5; --mf-b3: #ccdbbd; --mf-b4: #d4e3c5; --mf-b5: #d9e9ca; --mf-b6: #deecd1;
+			--mf-b7: #e0edd4; --mf-b8: #e3eed8; --mf-b9: #e5f0db; --mf-b10: #e4efd9; --mf-b11: #e4efd9;
+			--mf-b12: #e4efda; --mf-h1: #e3eed8; --mf-h2: #e0edd4; --mf-h3: #bbc9ae; --mf-h4: #b4c1a7; --mf-h5: #bbc9ae;
+			--mf-h6: #ddebd0; --mf-h7: #e3efd9; --mf-h8: #e5f0db; --mf-h9: #e7f1dd; --mf-h10: #e3efd9; --mf-h11: #e1edd5;
+			--mf-h12: #d6e5c7; --mf-h13: #a6b39b; --mf-h14: #c0ceb3; --mf-h15: #c9d8bb; --mf-h16: #d4e4c6;
+			--mf-h17: #daeacc; --mf-h18: #dceace; --mf-h19: #dfecd3; --mf-h20: #e1edd6; --mf-h21: #e4efda;
+			--mf-h22: #e3eed8; --mf-h23: #e1edd6; --mf-h24: #e0edd4; --mf-h25: #d6e6c7; --mf-h26: #a6b39a;
+			--mf-h27: #afbca2; --mf-o1: #dbeacd; --mf-o2: #e7f1de; --mf-o3: #e6f0dd; --mf-o4: #e5efdb; --mf-o5: #e2eed7;
+			--mf-o6: #e3efd8; --mf-o7: #e5f0db; --mf-o8: #e1edd6; --mf-o9: #dbeacd; --mf-o10: #bbc9ae; --mf-o11: #a6b39a;
 		}
 
+		/* Open: the inner display */
+		&.fold-open {
+			padding: 23.42px 23.93px 23.45px 25.25px;
+			border-radius: 76.06px;
+			--mf-bg: #000;
+			--mf-shadow:
+				inset 0 0 0 0.23px var(--mf-o1),
+				inset 0 0 0 1.05px var(--mf-o2),
+				inset 0 0 0 1.46px var(--mf-o3),
+				inset 0 0 0 1.87px var(--mf-o4),
+				inset 0 0 0 3.1px var(--mf-o5),
+				inset 0 0 0 3.51px var(--mf-o6),
+				inset 0 0 0 3.92px var(--mf-o7),
+				inset 0 0 0 4.33px var(--mf-o8),
+				inset 0 0 0 4.74px var(--mf-o9),
+				inset 0 0 0 5.15px var(--mf-o10),
+				inset 0 0 0 5.56px var(--mf-o11),
+				inset 0 0 0 5.97px var(--mf-o12);
+
+			.screen { border-radius: 53.74px; }
+
+			.camera { top: 43.21px; left: 824.33px; width: 29.43px; height: 29.43px; }
+		}
+
+		/* Landscape: turned counter-clockwise, the hinge at the bottom */
 		&.landscape {
 			width: 901px;
 			height: 412px;
-			padding: 24.35px 24.35px 30.54px;
+			padding: 24.87px 24.69px 31.6px 24.98px;
+			border-radius: 78.18px 78.18px 24.37px 24.37px;
+			--mf-shadow:
+				inset 0 -1.12px 0 0 var(--mf-h1),
+				inset 0 -1.5px 0 0 var(--mf-h2),
+				inset 0 -1.89px 0 0 var(--mf-h3),
+				inset 0 -2.27px 0 0 var(--mf-h4),
+				inset 0 -3.41px 0 0 var(--mf-h5),
+				inset 0 -3.79px 0 0 var(--mf-h6),
+				inset 0 -4.17px 0 0 var(--mf-h7),
+				inset 0 -4.55px 0 0 var(--mf-h8),
+				inset 0 -6.08px 0 0 var(--mf-h9),
+				inset 0 -6.46px 0 0 var(--mf-h10),
+				inset 0 -6.84px 0 0 var(--mf-h11),
+				inset 0 -7.22px 0 0 var(--mf-h12),
+				inset 0 -7.6px 0 0 var(--mf-h13),
+				inset 0 -7.98px 0 0 var(--mf-h14),
+				inset 0 -8.36px 0 0 var(--mf-h15),
+				inset 0 -8.74px 0 0 var(--mf-h16),
+				inset 0 -9.12px 0 0 var(--mf-h17),
+				inset 0 -9.5px 0 0 var(--mf-h18),
+				inset 0 -9.89px 0 0 var(--mf-h19),
+				inset 0 -10.27px 0 0 var(--mf-h20),
+				inset 0 -12.17px 0 0 var(--mf-h21),
+				inset 0 -12.55px 0 0 var(--mf-h22),
+				inset 0 -13.31px 0 0 var(--mf-h23),
+				inset 0 -15.22px 0 0 var(--mf-h24),
+				inset 0 -15.6px 0 0 var(--mf-h25),
+				inset 0 -15.98px 0 0 var(--mf-h26),
+				inset 0 -16.36px 0 0 var(--mf-h27),
+				inset 0 0 0 0.11px var(--mf-b1),
+				inset 0 0 0 1.25px var(--mf-b2),
+				inset 0 0 0 1.63px var(--mf-b3),
+				inset 0 0 0 2.02px var(--mf-b4),
+				inset 0 0 0 2.4px var(--mf-b5),
+				inset 0 0 0 2.78px var(--mf-b6),
+				inset 0 0 0 3.16px var(--mf-b7),
+				inset 0 0 0 3.54px var(--mf-b8),
+				inset 0 0 0 5.06px var(--mf-b9),
+				inset 0 0 0 6.21px var(--mf-b10),
+				inset 0 0 0 7.35px var(--mf-b11),
+				inset 0 0 0 8.11px var(--mf-b12),
+				inset 0 0 0 8.49px var(--mf-g1),
+				inset 0 0 0 8.87px var(--mf-g2),
+				inset 0 0 0 9.25px var(--mf-g3),
+				inset 0 0 0 9.63px var(--mf-g4);
 
-			.camera { top: 216.54px; left: 40.35px; }
+			.screen { border-radius: 52.19px 49.14px 49.14px 49.14px; }
 
+			.camera { top: 218.04px; left: 42.14px; }
 			.sleep { left: 277.31px; width: 90.22px; }
 			.volume { left: 427.37px; width: 124.41px; }
 
 			.hinge { height: 49px; margin: -24.5px 0 0; }
 
 			&.fold-open {
-				padding: 27.05px 26.01px;
+				padding: 23.93px 23.45px 25.25px 23.42px;
+				border-radius: 76.06px;
+				--mf-shadow:
+					inset 0 0 0 0.23px var(--mf-o1),
+					inset 0 0 0 1.05px var(--mf-o2),
+					inset 0 0 0 1.46px var(--mf-o3),
+					inset 0 0 0 1.87px var(--mf-o4),
+					inset 0 0 0 3.1px var(--mf-o5),
+					inset 0 0 0 3.51px var(--mf-o6),
+					inset 0 0 0 3.92px var(--mf-o7),
+					inset 0 0 0 4.33px var(--mf-o8),
+					inset 0 0 0 4.74px var(--mf-o9),
+					inset 0 0 0 5.15px var(--mf-o10),
+					inset 0 0 0 5.56px var(--mf-o11),
+					inset 0 0 0 5.97px var(--mf-o12);
 
-				.camera { top: 47.46px; left: 42.63px; }
+				.screen { border-radius: 53.74px; }
+
+				.camera { top: 47.41px; left: 43.21px; }
 			}
 		}
 	}
@@ -2926,6 +3360,8 @@
 		--duo-wall-r: linear-gradient(to right, #05060e 0%, #030306 14%, #171d26 29%, #2a3544 43%, #39485f 57%, #65758e 71%, #50627f 86%, #475771 100%);
 		/* half-open: the half turned away from the light is darker (0 turns it off) */
 		--duo-fold-shade: 0.22;
+		/* closed: grain of the bead-blasted spine, mid grey around 50% (an overlay keeps the colour) */
+		--duo-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.4 0 0 0 0.3 0.4 0 0 0 0.3 0.4 0 0 0 0.3 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='48' height='48' filter='url%28%23g%29'/%3E%3C/svg%3E");
 
 		&.star-white {
 			/* closed: front panel rings (top-edge profile) */
@@ -3000,15 +3436,19 @@
 
 		/* ---------- Closed: outer display ---------- */
 
-		/* The other half's spine, peeking out on the hinge side */
+		/* The other half's spine, peeking out on the hinge side. Its ends are Apple's: superellipses
+		   7 px from the top and bottom (React masks them, DUO_SPINE_ENDS); this ellipse is within 0.15 px.
+		   The spine is bead-blasted, not polished like the band: a fine grain over its colour profile,
+		   as strong as on Apple's bezel. */
 		.duo-spine {
 			position: absolute;
-			top: 6px;
-			bottom: 6px;
+			top: 7px;
+			bottom: 7px;
 			left: 0;
 			width: 16px;
-			border-radius: 12px 0 0 12px;
-			background: var(--duo-spine);
+			border-radius: 10px 0 0 10px / 10.25px 0 0 10.25px;
+			background: var(--duo-grain) 0 0 / 48px 48px, var(--duo-spine);
+			background-blend-mode: overlay, normal;
 		}
 
 		.duo-panel {

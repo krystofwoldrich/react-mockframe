@@ -6,7 +6,8 @@ import { render } from '@testing-library/react'
 import { MockFrame, CustomMockFrame, DeviceOptions } from '../MockFrame'
 import type { MockFrameProps } from '../MockFrame'
 import {
-  DUO_BANDS, DUO_SCREEN_SHAPES, FRAME_BANDS, SCREEN_SHAPES, bodyCornerPaths, paddingSides, screenMaskSvg, screenShapeStyle,
+  DUO_BANDS, DUO_SCREEN_SHAPES, DUO_SPINE_ENDS, FRAME_BANDS, cornersShapeStyle, POSE_FRAME_BANDS, POSE_SCREEN_SHAPES, SCREEN_SHAPES, bandCornerPaths, bodyCornerPaths,
+  paddingSides, screenMaskSvg, screenShapeStyle, turnShape,
 } from '../ScreenShape'
 
 describe('MockFrame className/style merging', () => {
@@ -199,7 +200,7 @@ describe('superellipse body and band', () => {
       { device: 'iPhone Duo', color: 'night-sky', pose: 'half-open' },
     ] as MockFrameProps[]) {
       const { container, unmount } = render(<MockFrame {...props} />)
-      for (const el of container.querySelectorAll<HTMLElement>('.body, .body > *, .screen, .duo-wall, .duo-shade')) {
+      for (const el of container.querySelectorAll<HTMLElement>('.body, .body > *, .screen, .duo-wall, .duo-shade, .duo-spine')) {
         const mask = el.style.maskImage
         if (mask) expect(mask.slice(4, -1)).not.toMatch(/url\(/)
       }
@@ -237,6 +238,17 @@ describe('superellipse body and band', () => {
     expect(frame.querySelector(':scope > .body')!.children).toHaveLength(1 + 18)
   })
 
+  it('gives the closed iPhone Duo\'s spine Apple\'s ends and a grain that exporters do not rewrite', () => {
+    const { container } = render(<MockFrame device="iPhone Duo" color="star-white" />)
+    const spine = container.querySelector('.duo-spine') as HTMLElement
+    expect(spine.style.borderRadius).toBe('0px')
+    expect(spine.style.maskImage).toBe(cornersShapeStyle(DUO_SPINE_ENDS).maskImage)
+    const css = readFileSync(resolve(__dirname, '../../css/mockframe.css'), 'utf8')
+    const grain = css.match(/--duo-grain: url\("(data:[^"]+)"\);/)![1]!
+    expect(grain).not.toMatch(/[()]/)
+    expect(decodeURIComponent(grain)).toContain("filter='url(#g)'")
+  })
+
   it('cuts the half-open side walls and shade to the open body and screen', () => {
     const { container } = render(<MockFrame device="iPhone Duo" color="night-sky" pose="half-open" />)
     for (const el of container.querySelectorAll<HTMLElement>('.duo-wall, .duo-shade')) {
@@ -265,15 +277,28 @@ describe('superellipse body and band', () => {
     const css = readFileSync(resolve(__dirname, '../../css/mockframe.css'), 'utf8')
     const ringsOf = (block: string, color: string) =>
       [...block.matchAll(new RegExp(`inset 0 0 0 ([\\d.]+)px var\\(${color}\\d+\\)`, 'g'))].map((m) => Number(m[1]))
+    const paddingOf = (block: string) => block.match(/padding: ((?:[\d.]+px ?){1,4});/)![1]!.split(' ').map(parseFloat)
     for (const [name, band] of Object.entries(FRAME_BANDS)) {
       const cls = DeviceOptions[name as keyof typeof DeviceOptions].device
-      const start = css.indexOf(`&.${cls} {`)
+      // The device's own block (a shared selector such as `&.pixel9profold, &.pixel10profold` is skipped)
+      const start = css.search(new RegExp(`\\n\\t&\\.${cls} \\{`))
       const block = css.slice(start, css.indexOf('.screen', start))
-      const padding = block.match(/padding: ([\d.]+)px(?: ([\d.]+)px)?;/)!.slice(1).filter(Boolean).map(Number)
-      expect(padding, name).toEqual(band!.padding)
-      expect(ringsOf(block, '--mf-b'), name).toEqual(band!.rings)
+      expect(paddingOf(block), name).toEqual(band!.padding)
+      expect(ringsOf(block, band!.ringColor ?? '--mf-b'), name).toEqual(band!.rings)
       const glass = block.match(/inset 0 0 ([\d.]+)px ([\d.]+)px var\(--mf-glass\)/)
       expect(glass && { spread: Number(glass[2]), blur: Number(glass[1]) }, name).toEqual(band!.glass ?? null)
+      // The hinge strips of a closed Fold: inset shadows from the left edge; then the glass edge after the band
+      const hinge = [...block.matchAll(/inset ([\d.]+)px 0 0 0 var\(--mf-h\d+\)/g)].map((m) => Number(m[1]))
+      expect(hinge, name).toEqual(band!.hinge?.rings ?? [])
+      const bandWidth = band!.rings[band!.rings.length - 1]!
+      expect(ringsOf(block, '--mf-g'), name).toEqual((band!.hinge?.edge.rings ?? []).map((d) => Math.round((bandWidth + d) * 100) / 100))
+      // The open pose of a Fold, in `&.fold-open` inside the device's block
+      for (const [pose, poseBand] of Object.entries(POSE_FRAME_BANDS[name as keyof typeof POSE_FRAME_BANDS] ?? {})) {
+        const poseStart = css.indexOf(`&.fold-${pose} {`, start)
+        const poseBlock = css.slice(poseStart, css.indexOf('.screen', poseStart))
+        expect(paddingOf(poseBlock), `${name} ${pose}`).toEqual(poseBand.padding)
+        expect(ringsOf(poseBlock, poseBand.ringColor!), `${name} ${pose}`).toEqual(poseBand.rings)
+      }
     }
     const duo = css.slice(css.indexOf('&.iphone-duo {'))
     const blockAt = (selector: string) => duo.slice(duo.indexOf(selector), duo.indexOf('}', duo.indexOf(selector)))
@@ -329,12 +354,51 @@ describe('Pixel 9 Pro, 10 Pro, 9 Pro Fold and 10 Pro Fold', () => {
     const { container, rerender } = render(<MockFrame device="Pixel 10 Pro Fold" color="jade" />)
     const root = container.firstChild as HTMLElement
     expect(root).toHaveClass('mockframe', 'pixel10profold', 'jade', 'fold-closed')
-    expect(container.querySelector('.spine')).not.toBeNull()
+    // Closed: the body (its hinge face color), the band rings, the spine (its stripes bent around its ends)
+    // and the glass with its edge rings
+    const closed = FRAME_BANDS['Pixel 10 Pro Fold']!
+    const spineRings = closed.hinge!.rings.filter((d) => d <= closed.hinge!.spine!.width).length
+    const body = root.querySelector(':scope > .body')!
+    expect(body.children).toHaveLength(1 + closed.rings.length + 1 + 1)
+    expect(body.children[body.children.length - 2]!.children).toHaveLength(1 + spineRings)
+    expect(body.lastElementChild!.children).toHaveLength(1 + closed.hinge!.edge.rings.length)
     expect(container.querySelectorAll('.hinge')).toHaveLength(2)
     rerender(<MockFrame device="Pixel 10 Pro Fold" color="jade" pose="open" landscape />)
     expect(root).toHaveClass('fold-open', 'landscape')
     expect(root).not.toHaveClass('fold-closed')
     expect(root).not.toHaveAttribute('pose')
+    // Open: the inner display's body and band, without hinge strips, and the hinge plates in the two gaps
+    const open = POSE_FRAME_BANDS['Pixel 10 Pro Fold']!.open!
+    expect(root.querySelector(':scope > .body')!.children).toHaveLength(1 + open.rings.length + 2)
+  })
+
+  it('cuts Google\'s hinge gaps into the open Folds\' top and bottom edges', () => {
+    const outline = (props: MockFrameProps) => {
+      const { container, unmount } = render(<MockFrame {...props} />)
+      const mask = decodeURIComponent((container.querySelector('.mockframe > .body') as HTMLElement).style.maskImage)
+      unmount()
+      return mask
+    }
+    for (const device of ['Pixel 9 Pro Fold', 'Pixel 10 Pro Fold'] as const) {
+      const open = outline({ device, color: device === 'Pixel 9 Pro Fold' ? 'obsidian' : 'jade', pose: 'open' } as MockFrameProps)
+      // Placed at the middle of the top edge and, mirrored, of the bottom edge
+      expect(open, device).toContain("<svg x='50%' y='0' overflow='visible'>")
+      expect(open, device).toContain("<svg x='50%' y='100%' overflow='visible'>")
+      const turned = outline({ device, color: device === 'Pixel 9 Pro Fold' ? 'obsidian' : 'jade', pose: 'open', landscape: true } as MockFrameProps)
+      expect(turned, device).toContain("<svg x='0' y='50%' overflow='visible'>")
+      // The closed device has no gap
+      expect(outline({ device, color: device === 'Pixel 9 Pro Fold' ? 'obsidian' : 'jade' } as MockFrameProps), device).not.toContain("x='50%'")
+    }
+  })
+
+  it('draws straight hinge strips with the hinge-straight class', () => {
+    const { container } = render(<MockFrame device="Pixel 9 Pro Fold" color="obsidian" className="hinge-straight" />)
+    const band = FRAME_BANDS['Pixel 9 Pro Fold']!
+    const body = container.querySelector('.mockframe > .body')!
+    expect(body.children).toHaveLength(1 + band.rings.length + band.hinge!.rings.length + 1)
+    // Bent (default): no strips, and no spine on the 9 Pro Fold
+    const bent = render(<MockFrame device="Pixel 9 Pro Fold" color="obsidian" />).container.querySelector('.mockframe > .body')!
+    expect(bent.children).toHaveLength(1 + band.rings.length + 1)
   })
 
   it('falls back to the closed pose for a pose the Fold does not have', () => {
@@ -347,5 +411,73 @@ describe('Pixel 9 Pro, 10 Pro, 9 Pro Fold and 10 Pro Fold', () => {
   it('does not add a pose class to devices without poses', () => {
     const { container } = render(<MockFrame device="Pixel 10" color="indigo" />)
     expect((container.firstChild as HTMLElement).className).not.toMatch(/fold-/)
+  })
+})
+
+describe('Pixel superellipse frames (measured on Google\'s emulator skins)', () => {
+  const pixels = [
+    { device: 'Pixel 10', color: 'indigo' },
+    { device: 'Pixel 10 Pro', color: 'moonstone' },
+    { device: 'Pixel 9 Pro', color: 'hazel' },
+    { device: 'Pixel 9 Pro Fold', color: 'porcelain' },
+    { device: 'Pixel 10 Pro Fold', color: 'moonstone' },
+  ] as MockFrameProps[]
+
+  it('gives every Pixel a superellipse screen, body and band', () => {
+    for (const props of pixels) {
+      const { container, unmount } = render(<MockFrame {...props} />)
+      const root = container.firstElementChild as HTMLElement
+      expect(root, props.device).toHaveClass('superellipse-body')
+      expect((container.querySelector('.screen') as HTMLElement).style.borderRadius, props.device).toBe('0px')
+      expect((root.querySelector(':scope > .body') as HTMLElement).style.maskImage).toMatch(/^url\("data:image\/svg\+xml,/)
+      // The body has its own corners: flatter superellipses than the screen
+      expect(FRAME_BANDS[props.device]!.body, props.device).toBeDefined()
+      unmount()
+    }
+  })
+
+  it('uses the inner display\'s screen when a Fold is open', () => {
+    const { container, rerender } = render(<MockFrame device="Pixel 9 Pro Fold" color="obsidian" />)
+    const screen = () => (container.querySelector('.screen') as HTMLElement).style.maskImage
+    expect(screen()).toBe(screenShapeStyle(SCREEN_SHAPES['Pixel 9 Pro Fold']!).maskImage)
+    rerender(<MockFrame device="Pixel 9 Pro Fold" color="obsidian" pose="open" />)
+    expect(screen()).toBe(screenShapeStyle(POSE_SCREEN_SHAPES['Pixel 9 Pro Fold']!.open!).maskImage)
+  })
+
+  it('turns corners that differ for landscape', () => {
+    // The closed Pixel 10 Pro Fold has a larger top-right screen corner; turned counter-clockwise it is the top-left one
+    const shape = SCREEN_SHAPES['Pixel 10 Pro Fold']!
+    expect(turnShape(shape).topLeft).toBe(shape.topRight)
+    const { container } = render(<MockFrame device="Pixel 10 Pro Fold" color="jade" landscape />)
+    expect((container.querySelector('.screen') as HTMLElement).style.maskImage).toBe(screenShapeStyle(turnShape(shape)).maskImage)
+    // The hinge is at the bottom: the spine capsule runs along it
+    const spine = FRAME_BANDS['Pixel 10 Pro Fold']!.hinge!.spine!
+    const capsule = [...container.querySelectorAll<HTMLElement>('.body > div')].filter((el) => el.style.height === `${spine.width}px`)
+    expect(capsule).toHaveLength(1)
+    expect(capsule[0]!.style.bottom).toBe('0px')
+    // With straight strips, they run along the bottom too (the face layer covers the bottom half)
+    const straight = render(<MockFrame device="Pixel 10 Pro Fold" color="jade" landscape className="hinge-straight" />).container
+    const strips = [...straight.querySelectorAll<HTMLElement>('.body > div')]
+      .filter((el) => el.style.bottom === '0px' && el.style.height && el.style.height !== '50%')
+    expect(strips).toHaveLength(FRAME_BANDS['Pixel 10 Pro Fold']!.hinge!.rings.length)
+  })
+
+  it('steps the closed Pixel 10 Pro Fold outline out to its spine on the hinge side', () => {
+    const band = FRAME_BANDS['Pixel 10 Pro Fold']!
+    const spine = band.hinge!.spine!
+    const outline = bandCornerPaths(SCREEN_SHAPES['Pixel 10 Pro Fold']!, band, 0)
+    // The hinge-side outline starts on the left edge where the spine's rounded end begins
+    expect(outline.topLeft).toMatch(new RegExp(`^M 0\\.00,${(spine.inset + spine.end.y).toFixed(2)} `))
+    expect(outline.bottomLeft).toBe(outline.topLeft)
+    // The other side follows the body corner only
+    expect(outline.topRight).toMatch(new RegExp(`^M 0\\.00,${band.body!.topRight.size.toFixed(2)} `))
+    // In landscape the hinge is at the bottom, so its outline is the same curve turned
+    const turned = bandCornerPaths(SCREEN_SHAPES['Pixel 10 Pro Fold']!, band, 0, true)
+    expect(turned.bottomLeft).not.toBe(outline.topLeft)
+    expect(turned.topLeft).toMatch(new RegExp(`^M 0\\.00,${band.body!.topRight.size.toFixed(2)} `))
+  })
+
+  it('draws the closed Pixel 9 Pro Fold at its 1080x2424 outer display, 412x924', () => {
+    expect(DeviceOptions['Pixel 9 Pro Fold']).toMatchObject({ width: 412, height: 924 })
   })
 })

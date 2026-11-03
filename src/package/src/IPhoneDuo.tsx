@@ -14,7 +14,7 @@
 
 import * as React from 'react'
 
-import { DUO_BANDS, DUO_SCREEN_SHAPES, bodyShapeStyle, screenShapeStyle } from './ScreenShape'
+import { DUO_BANDS, DUO_SCREEN_SHAPES, DUO_SPINE_ENDS, bodyShapeStyle, cornersShapeStyle, screenShapeStyle } from './ScreenShape'
 import { FrameBody } from './FrameBody'
 
 export type DuoPose = 'closed' | 'half-open' | 'open'
@@ -69,6 +69,9 @@ function matrix3d(src: Pt[], dst: Pt[]): string {
 }
 
 /** Half-open side walls: the open body's outline, so the walls follow its superellipse corners */
+/** The spine's superellipse ends (Apple's closed bezel), replacing its CSS radius */
+const SPINE_STYLE = cornersShapeStyle(DUO_SPINE_ENDS)
+
 const WALL_STYLES = {
   left: bodyShapeStyle(DUO_SCREEN_SHAPES.inner, DUO_BANDS.inner, ['topLeft', 'bottomLeft']),
   right: bodyShapeStyle(DUO_SCREEN_SHAPES.inner, DUO_BANDS.inner, ['topRight', 'bottomRight']),
@@ -113,7 +116,7 @@ function DuoDevice({ inner, sw, sh, rotated, hideCamera, duplicate, half, childr
         </>
       ) : (
         <>
-          <div className="duo-spine" />
+          <div className="duo-spine" style={SPINE_STYLE} />
           <div className="duo-panel superellipse-body">
             <FrameBody shape={DUO_SCREEN_SHAPES.outer} band={DUO_BANDS.outer} />
             <div className="duo-strip-b" />

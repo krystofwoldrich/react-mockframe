@@ -141,7 +141,7 @@ export const DeviceOptions = {
         hasLandscape: true,
         // Outer display; the inner display (open) is 852x883
         width: 412,
-        height: 922,
+        height: 924,
         poses: ['closed', 'open'] as const,
     }),
     ['Galaxy S25']: defineDevice({

@@ -7,8 +7,8 @@
  *
  * @example Basic usage
  * ```tsx
- * import { MockFrame } from 'react-mockframe'
- * import 'react-mockframe/styles/mockframe.css'
+ * import { MockFrame } from '@krystofs/device-frames'
+ * import '@krystofs/device-frames/styles/mockframe.css'
  *
  * <MockFrame device="iPhone 17" color="lavender">
  *   <YourApp />
@@ -31,7 +31,7 @@ import type {
 import { DeviceOptions, DeviceNames } from './DeviceOptions'
 import { DuoFrame } from './IPhoneDuo'
 import type { DuoPose } from './IPhoneDuo'
-import { SCREEN_SHAPES, FRAME_BANDS, screenShapeStyle } from './ScreenShape'
+import { frameBandFor, screenShapeFor, screenShapeStyle, turnShape } from './ScreenShape'
 import { FrameBody } from './FrameBody'
 
 /* =============================================================================
@@ -131,12 +131,11 @@ const DynamicIslandAnatomy = ({ hideNotch }: { hideNotch?: boolean }) => (
 )
 
 /**
- * Hinge parts of the Pixel Pro Folds: the spine beside the outer display (closed)
- * and the marks at the fold (open). The CSS shows the ones for the current pose.
+ * Hinge marks at the fold of the Pixel Pro Folds, shown when open. The hinge side of the
+ * closed device is part of the body and band (FrameBody, or inset rings in the CSS).
  */
 const PixelFoldAnatomy = () => (
   <>
-    <div className="spine" />
     <div className="hinge hinge--top" />
     <div className="hinge hinge--bottom" />
   </>
@@ -493,13 +492,13 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   }
 
   // Build CSS class string for device styling
-  // Superellipse screen corners for the frames measured from Apple's bezels, and
-  // for the band frames also a body and band that follow the screen corners
-  const screenShape = SCREEN_SHAPES[device]
-  const band = screenShape && FRAME_BANDS[device]
-
   // Foldables: the CSS draws the current pose (the first one by default)
   const foldPose = config.poses && (pose && config.poses.includes(pose) ? pose : config.poses[0])
+
+  // Superellipse screen corners for the frames measured from Apple's bezels and Google's skins,
+  // and for the band frames also a superellipse body and band (for the pose's display)
+  const screenShape = screenShapeFor(device, foldPose)
+  const band = screenShape && frameBandFor(device, foldPose)
 
   const className = cx(
     'mockframe', config.device, color, isLandscape && 'landscape', foldPose && `fold-${foldPose}`,
@@ -509,7 +508,15 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
   return (
     <div ref={ref} className={className} {...divProps} style={{ ...style, ...userStyle }}>
       {/* Superellipse body and band (replaces the CSS body and band) */}
-      {screenShape && band && <FrameBody shape={screenShape} band={band} landscape={isLandscape} />}
+      {screenShape && band && (
+        <FrameBody
+          shape={screenShape}
+          band={band}
+          landscape={isLandscape}
+          // A closed Pixel Fold's hinge bends its shading around its corners; `hinge-straight` keeps straight strips
+          hingeStyle={/(^|\s)hinge-straight(\s|$)/.test(userClassName ?? '') ? 'straight' : 'bent'}
+        />
+      )}
 
       {/* Inner bezel layer */}
       <div className="inner" />
@@ -535,7 +542,9 @@ const MockFrameBase = React.forwardRef<HTMLDivElement, MockFrameProps>(function 
       <div className="inner-shadow" />
 
       {/* Screen content area */}
-      <div className="screen" style={screenShape && screenShapeStyle(screenShape)}>{children}</div>
+      <div className="screen" style={screenShape && screenShapeStyle(isLandscape ? turnShape(screenShape) : screenShape)}>
+        {children}
+      </div>
 
       {/* Home button (for devices that have one) */}
       <div className="home" />
