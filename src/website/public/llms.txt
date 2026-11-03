@@ -1,16 +1,16 @@
 # MockFrame
 
-react-mockframe is a React component library for rendering device mockups.
+@krystofs/device-frames (a fork of react-mockframe) is a React component library for rendering device mockups.
 
 ## What it does
 Display your app screenshots or content inside realistic iPhone, Android, iPad, and MacBook frames. Commonly used for SaaS landing pages, product showcases, and marketing websites.
 
 ## Installation
-npm install react-mockframe
+npm install @krystofs/device-frames
 
 ## Basic usage
-import { MockFrame } from 'react-mockframe'
-import 'react-mockframe/styles/mockframe.css'
+import { MockFrame } from '@krystofs/device-frames'
+import '@krystofs/device-frames/styles/mockframe.css'
 
 <MockFrame device="iPhone 17" color="black">
   <img src="/screenshot.png" alt="App preview" />

@@ -1,11 +1,17 @@
 {
-  "name": "react-mockframe",
-  "version": "1.3.0",
+  "name": "@krystofs/device-frames",
+  "version": "1.0.0",
   "author": {
-    "name": "Mohammed Banani",
-    "url": "https://github.com/mbdev3"
+    "name": "Krystof Woldrich",
+    "url": "https://github.com/krystofwoldrich"
   },
-  "description": "React device mockup components for landing pages and product showcases. Display your app in iPhone, Android, iPad, and MacBook frames.",
+  "contributors": [
+    {
+      "name": "Mohammed Banani",
+      "url": "https://github.com/mbdev3"
+    }
+  ],
+  "description": "React device frames with real screen and body shapes: iPhone, iPhone Duo, Pixel, Pixel Fold, Galaxy, iPad and MacBook mockups for landing pages and product showcases. A fork of react-mockframe.",
   "keywords": [
     "react",
     "device",
@@ -30,17 +36,26 @@
     "hero-section",
     "app-preview",
     "ui-showcase",
-    "device-frame"
+    "device-frame",
+    "superellipse",
+    "foldable",
+    "pixel-fold",
+    "iphone-duo",
+    "react-mockframe"
   ],
-  "homepage": "https://mockframe.matterdevelopment.com",
+  "homepage": "https://github.com/krystofwoldrich/react-mockframe#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mbdev3/react-mockframe"
+    "url": "git+https://github.com/krystofwoldrich/react-mockframe.git",
+    "directory": "src/package"
   },
   "bugs": {
-    "url": "https://github.com/mbdev3/react-mockframe/issues"
+    "url": "https://github.com/krystofwoldrich/react-mockframe/issues"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": [
     "dist/styles/*.css"
   ],

@@ -1,9 +1,13 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
-import { MockFrame, DeviceNames, DeviceOptions } from 'react-mockframe'
-import type { DeviceName, MockFrameProps } from 'react-mockframe'
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
+import { MockFrame, DeviceNames, DeviceOptions } from '@krystofs/device-frames'
+import type { DeviceName, MockFrameProps } from '@krystofs/device-frames'
 import { Smartphone, Upload, Download, RotateCcw, Move, ChevronDown, Check, Copy, Trash2 } from 'lucide-react'
 import { toPng } from 'html-to-image'
 import defaultScreenshot from '../assets/default-screenshot.webp'
+import {
+  findReference, expectedReferenceNames, loadReference, rotateReference,
+  type LoadedReference, type Rect,
+} from './referenceFrames'
 
 /* -----------------------------------------------------------------------------
    Device lists
@@ -336,6 +340,42 @@ function UploadedImageContent({ src, zoom, position, onMouseDown, onMouseMove, o
 }
 
 /* -----------------------------------------------------------------------------
+   Reference frames (images you add to src/website/reference-frames, see referenceFrames.ts)
+   ----------------------------------------------------------------------------- */
+
+type ReferenceMode = 'off' | 'side' | 'overlay'
+const referenceModes: { value: ReferenceMode, label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'side', label: 'Side by side' },
+  { value: 'overlay', label: 'Overlay' },
+]
+
+/** Draws a loaded reference at its full resolution; CSS sets the display size */
+function ReferenceCanvas({ reference, style }: { reference: LoadedReference, style: React.CSSProperties }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const canvas = ref.current
+    if (!canvas) return
+    canvas.width = reference.canvas.width
+    canvas.height = reference.canvas.height
+    canvas.getContext('2d')!.drawImage(reference.canvas, 0, 0)
+  }, [reference])
+  return <canvas ref={ref} style={style} aria-label={`Reference: ${reference.path}`} />
+}
+
+/** A label under a compared frame, kept at the same on-screen size at any zoom */
+const CompareCaption = ({ zoom, children }: { zoom: number, children: React.ReactNode }) => (
+  <div
+    className="absolute left-1/2 whitespace-nowrap text-[#60646c]"
+    style={{ top: '100%', marginTop: 24 / zoom, fontSize: 14 / zoom, transform: 'translateX(-50%)' }}
+  >
+    {children}
+  </div>
+)
+
+const fmt = (v: number) => String(Math.round(v * 100) / 100)
+
+/* -----------------------------------------------------------------------------
    Page
    ----------------------------------------------------------------------------- */
 
@@ -346,6 +386,8 @@ export default function MockFrameDemo() {
   const [landscape, setLandscape] = useState(false)
   const [hideNotch, setHideNotch] = useState(false)
   const [pose, setPose] = useState<DuoPose>('closed')
+  // Closed Pixel Folds: hinge shading bent around its corners (default) or straight strips
+  const [hingeStraight, setHingeStraight] = useState(false)
   const deviceInfo = DeviceOptions[device]
   const isDuo = device === 'iPhone Duo'
   const isPixelFold = pixelFolds.includes(device)
@@ -378,6 +420,30 @@ export default function MockFrameDemo() {
   const [exportFormat, setExportFormat] = useState<'png' | 'webp'>('png')
   const [isExporting, setIsExporting] = useState(false)
 
+  // Reference frame: a bezel image from src/website/reference-frames, by list entry name, then frame name
+  const [referenceMode, setReferenceMode] = useState<ReferenceMode>('off')
+  const [referenceOpacity, setReferenceOpacity] = useState(0.5)
+  const referencePose = isDuo || isPixelFold ? pose : undefined
+  const referenceSource = useMemo(
+    () => findReference(entry.name !== device ? [entry.name, device] : [device], referencePose),
+    [entry.name, device, referencePose],
+  )
+  const [reference, setReference] = useState<LoadedReference | { error: string } | null>(null)
+  useEffect(() => {
+    setReference(null)
+    if (!referenceSource) return
+    let cancelled = false
+    loadReference(referenceSource).then(
+      (loaded) => !cancelled && setReference(loaded),
+      (err: Error) => !cancelled && setReference({ error: err.message }),
+    )
+    return () => { cancelled = true }
+  }, [referenceSource])
+  const referenceLoaded = reference && !('error' in reference) ? reference : null
+  const comparing = referenceMode !== 'off' && !!referenceLoaded && !needsFrame && !isExporting
+  const sideBySide = referenceMode === 'side' && !!referenceSource
+
+
   const selectDevice = (newDevice: DeviceName) => {
     setDevice(newDevice)
     if (newDevice === 'iPhone Duo') setLandscape(false)
@@ -398,7 +464,7 @@ export default function MockFrameDemo() {
       const [w, h] = duoPose.size
       const turned = pose !== 'half-open' && landscape !== duoPose.landscape
       const [fw, fh] = turned ? [h, w] : [w, h]
-      return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (fw * 1.1), availableHeight / (fh * 1.1))))
+      return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (fw * 1.1 * (sideBySide ? 2.1 : 1)), availableHeight / (fh * 1.1))))
     }
 
     const [screenWidth, screenHeight] = pixelFoldOpen ? PIXEL_FOLD_INNER : [deviceInfo.width || 375, deviceInfo.height || 812]
@@ -406,8 +472,10 @@ export default function MockFrameDemo() {
     const deviceHeight = landscape ? screenWidth : screenHeight
     // Frames add bezels and buttons around the screen
     const chrome = device.toLowerCase().includes('macbook') ? 1.15 : 1.12
-    return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (deviceWidth * chrome), availableHeight / (deviceHeight * chrome))))
-  }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose, pixelFoldOpen])
+    // Side by side, the reference takes about as much width again
+    const widthFactor = sideBySide ? 2.1 : 1
+    return Math.max(0.25, Math.min(1.5, Math.min(availableWidth / (deviceWidth * chrome * widthFactor), availableHeight / (deviceHeight * chrome))))
+  }, [deviceInfo.width, deviceInfo.height, landscape, device, isDuo, duoPose, pose, pixelFoldOpen, sideBySide])
 
   useEffect(() => {
     if (deviceZoom !== 'auto') return
@@ -422,6 +490,46 @@ export default function MockFrameDemo() {
 
   const effectiveZoom = deviceZoom === 'auto' ? autoZoomValue : deviceZoom
 
+  // The generated screen inside the compared frame, in unscaled px (the largest .screen element)
+  const frameBoxRef = useRef<HTMLDivElement>(null)
+  const [generatedScreen, setGeneratedScreen] = useState<Rect | null>(null)
+  useLayoutEffect(() => {
+    const box = frameBoxRef.current
+    if (!comparing || !box) return
+    const boxRect = box.getBoundingClientRect()
+    // The box is inside the wrapper scaled by effectiveZoom
+    const scale = effectiveZoom
+    const b = [...box.querySelectorAll('.screen')]
+      .map((el) => el.getBoundingClientRect())
+      .reduce<{ left: number, top: number, width: number, height: number } | undefined>(
+        (best, r) => (!best || r.width * r.height > best.width * best.height ? r : best), undefined)
+    if (!b) return
+    const next = { x: (b.left - boxRect.left) / scale, y: (b.top - boxRect.top) / scale, w: b.width / scale, h: b.height / scale }
+    setGeneratedScreen((prev) => prev && (['x', 'y', 'w', 'h'] as const).every((k) => Math.abs(prev[k] - next[k]) < 0.01) ? prev : next)
+  }, [comparing, device, pose, landscape, hideNotch, color, referenceMode, effectiveZoom])
+
+  // The reference scaled so its screen opening has the generated screen's width, turned if the orientation differs
+  const referenceView = useMemo(() => {
+    if (!referenceLoaded || !generatedScreen) return null
+    const turn = (generatedScreen.w > generatedScreen.h) !== (referenceLoaded.screen.w > referenceLoaded.screen.h)
+    const ref = turn ? rotateReference(referenceLoaded) : referenceLoaded
+    const scale = generatedScreen.w / ref.screen.w
+    const centerX = (ref.screen.x + ref.screen.w / 2) * scale
+    const centerY = (ref.screen.y + ref.screen.h / 2) * scale
+    return {
+      ref,
+      scale,
+      width: ref.canvas.width * scale,
+      height: ref.canvas.height * scale,
+      screenHeight: ref.screen.h * scale,
+      // Overlay: screen centers on top of each other
+      left: generatedScreen.x + generatedScreen.w / 2 - centerX,
+      top: generatedScreen.y + generatedScreen.h / 2 - centerY,
+      // Side by side: how much lower the reference's screen center is than the frame's
+      centerOffset: centerY - (generatedScreen.y + generatedScreen.h / 2),
+    }
+  }, [referenceLoaded, generatedScreen])
+
   const codeSnippet = useMemo(() => {
     const props: string[] = [`device="${device}"`]
     if (colors.length > 0 && color) props.push(`color="${color}"`)
@@ -435,8 +543,9 @@ export default function MockFrameDemo() {
       if (deviceInfo.hasLandscape && landscape) props.push('landscape')
     }
     if (deviceHasNotch && hideNotch) props.push('hideNotch')
+    if (isPixelFold && !pixelFoldOpen && hingeStraight) props.push('className="hinge-straight"')
     return `<MockFrame\n  ${props.join('\n  ')}\n>\n  <YourAppContent />\n</MockFrame>`
-  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose, pixelFoldOpen])
+  }, [device, color, colors.length, landscape, deviceInfo.hasLandscape, deviceHasNotch, hideNotch, isDuo, pose, duoPose, pixelFoldOpen, isPixelFold, hingeStraight])
 
   const handleCopy = async () => {
     try {
@@ -556,6 +665,7 @@ export default function MockFrameDemo() {
   } as MockFrameProps
 
   const onOff = [{ value: 'show', label: 'Show' }, { value: 'hide', label: 'Hide' }]
+  const hingeClass = isPixelFold && hingeStraight ? 'hinge-straight' : undefined
   const showOrientation = deviceInfo.hasLandscape && !(isDuo && pose === 'half-open')
 
   return (
@@ -633,6 +743,14 @@ export default function MockFrameDemo() {
             {isPixelFold && (
               <OptionRow label="Fold" value={pose} options={pixelFoldPoses} onChange={(value) => setPose(value as DuoPose)} />
             )}
+            {isPixelFold && !pixelFoldOpen && (
+              <OptionRow
+                label="Hinge"
+                value={hingeStraight ? 'straight' : 'bent'}
+                options={[{ value: 'bent', label: 'Bent' }, { value: 'straight', label: 'Straight' }]}
+                onChange={(value) => setHingeStraight(value === 'straight')}
+              />
+            )}
             {showOrientation && (
               <OptionRow
                 label="Orientation"
@@ -655,6 +773,63 @@ export default function MockFrameDemo() {
               options={zoomPresets.map((p) => p.value === 'auto' ? { ...p, label: `Auto (${Math.round(autoZoomValue * 100)}%)` } : p)}
               onChange={(value) => setDeviceZoom(value === 'auto' ? 'auto' : Number(value))}
             />
+          </Section>
+        )}
+
+        {!needsFrame && (
+          <Section title="Reference frame" collapsible>
+            {referenceSource ? (
+              <>
+                <p className="break-all text-[13px] text-[#60646c]">
+                  reference-frames/{referenceSource.path}
+                  {referenceSource.kind === 'skin' && ' (Android Studio skin)'}
+                </p>
+                {reference && 'error' in reference && (
+                  <p className="mt-1 text-[13px] text-[#e5484d]">{reference.error}</p>
+                )}
+                <OptionRow
+                  label="Show"
+                  value={referenceMode}
+                  options={referenceModes}
+                  onChange={(value) => setReferenceMode(value as ReferenceMode)}
+                />
+                {referenceMode === 'overlay' && (
+                  <div className="flex items-center justify-between gap-3 py-[9px]">
+                    <span className="text-[15px] text-[#60646c]">Opacity</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={referenceOpacity}
+                        onChange={(e) => setReferenceOpacity(parseFloat(e.target.value))}
+                        className="w-28 accent-[#1c2024]"
+                        aria-label="Reference opacity"
+                      />
+                      <span className="w-9 text-right text-[13px] text-[#60646c]">{Math.round(referenceOpacity * 100)}%</span>
+                    </div>
+                  </div>
+                )}
+                {comparing && generatedScreen && referenceView && (
+                  <p className="text-[13px] text-[#8b8d98]">
+                    Scaled to the same screen width. Screen height: generated {fmt(generatedScreen.h)}, reference {fmt(referenceView.screenHeight)}.
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="text-[13px] text-[#8b8d98]">
+                <p>
+                  No reference image for {entry.name}. To compare, add one of these to{' '}
+                  <code className="text-[#60646c]">src/website/reference-frames/</code>:
+                </p>
+                <ul className="mt-1.5 list-disc pl-4 font-mono text-[12px] text-[#60646c]">
+                  <li>{expectedReferenceNames(entry.name, referencePose).image}</li>
+                  <li>{expectedReferenceNames(entry.name, referencePose).skin} (Android Studio skin)</li>
+                </ul>
+                <p className="mt-1.5">The README in that folder explains the names.</p>
+              </div>
+            )}
           </Section>
         )}
 
@@ -795,6 +970,56 @@ export default function MockFrameDemo() {
             <p className="text-[17px] font-medium text-[#1c2024]">This needs to be edited.</p>
             <p className="mt-1 text-[14px] text-[#8b8d98]">{entry.name} has no frame yet.</p>
           </div>
+        ) : comparing ? (
+          /* The frame and the reference in one scaled box, so they keep the same scale */
+          <div
+            className="flex items-start"
+            style={{ transform: `scale(${effectiveZoom})`, gap: referenceMode === 'side' ? 96 : 0 }}
+          >
+            <div
+              ref={frameBoxRef}
+              className="relative"
+              style={{ marginTop: referenceMode === 'side' && referenceView ? Math.max(0, referenceView.centerOffset) : 0 }}
+            >
+              <MockFrame {...frameProps} animated={false} hideNotch={hideNotch} className={hingeClass}>
+                <UploadedImageContent
+                  src={uploadedImage ?? defaultScreenshot}
+                  zoom={imageZoom}
+                  position={imagePosition}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  isDragging={isDragging}
+                  background={bgType === 'gradient' ? bgGradient : bgColor}
+                />
+              </MockFrame>
+              {referenceMode === 'overlay' && referenceView && (
+                <ReferenceCanvas
+                  reference={referenceView.ref}
+                  style={{
+                    position: 'absolute',
+                    left: referenceView.left,
+                    top: referenceView.top,
+                    width: referenceView.width,
+                    height: referenceView.height,
+                    opacity: referenceOpacity,
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                  }}
+                />
+              )}
+              {referenceMode === 'side' && <CompareCaption zoom={effectiveZoom}>Generated: {device}</CompareCaption>}
+            </div>
+            {referenceMode === 'side' && referenceView && (
+              <div className="relative" style={{ marginTop: Math.max(0, -referenceView.centerOffset) }}>
+                <ReferenceCanvas
+                  reference={referenceView.ref}
+                  style={{ display: 'block', width: referenceView.width, height: referenceView.height }}
+                />
+                <CompareCaption zoom={effectiveZoom}>Reference: {referenceView.ref.path}</CompareCaption>
+              </div>
+            )}
+          </div>
         ) : (
           /* The padding keeps the side buttons inside exported images */
           <div
@@ -806,6 +1031,7 @@ export default function MockFrameDemo() {
               zoom={isExporting ? undefined : effectiveZoom}
               animated={!isExporting}
               hideNotch={hideNotch}
+              className={hingeClass}
             >
               <UploadedImageContent
                 src={uploadedImage ?? defaultScreenshot}

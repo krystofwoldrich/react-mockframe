@@ -1,0 +1,4 @@
+# Reference images are third-party artwork: keep them local, never commit them.
+*
+!.gitignore
+!README.md

@@ -1,31 +1,31 @@
 {
-  "name": "react-mockframe-monorepo",
+  "name": "device-frames-monorepo",
   "author": {
-    "name": "Mohammed Banani",
-    "url": "https://github.com/mbdev3"
+    "name": "Krystof Woldrich",
+    "url": "https://github.com/krystofwoldrich"
   },
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/mbdev3/react-mockframe"
+    "url": "https://github.com/krystofwoldrich/react-mockframe"
   },
   "bugs": {
-    "url": "https://github.com/mbdev3/react-mockframe/issues"
+    "url": "https://github.com/krystofwoldrich/react-mockframe/issues"
   },
   "scripts": {
     "dev": "npm-run-all --parallel dev:lib dev:site",
-    "dev:lib": "pnpm --filter react-mockframe dev",
-    "dev:site": "pnpm --filter react-mockframe-example dev",
+    "dev:lib": "pnpm --filter @krystofs/device-frames dev",
+    "dev:site": "pnpm --filter device-frames-example dev",
     "build": "pnpm build:lib && pnpm build:site",
-    "build:lib": "pnpm --filter react-mockframe build",
-    "build:site": "pnpm --filter react-mockframe-example build",
-    "preview": "pnpm --filter react-mockframe-example preview",
+    "build:lib": "pnpm --filter @krystofs/device-frames build",
+    "build:site": "pnpm --filter device-frames-example build",
+    "preview": "pnpm --filter device-frames-example preview",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "@krystofs/device-frames": "workspace:*",
     "react": "^19.0.0",
-    "react-mockframe": "workspace:*",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {

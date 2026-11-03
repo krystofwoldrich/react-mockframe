@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   publish:
-    if: github.repository == 'mbdev3/react-mockframe' && github.ref == 'refs/heads/master'
+    if: github.repository == 'krystofwoldrich/react-mockframe' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
       - run: npm install -g npm@^11.5.1
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm --filter react-mockframe test
+      - run: pnpm --filter @krystofs/device-frames test
       - run: pnpm build:lib
       - run: npm publish --access public
         working-directory: src/package

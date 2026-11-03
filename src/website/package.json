@@ -1,7 +1,7 @@
 {
-  "name": "react-mockframe-example",
+  "name": "device-frames-example",
   "private": true,
-  "description": "react-mockframe demo and documentation site",
+  "description": "@krystofs/device-frames demo and documentation site",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

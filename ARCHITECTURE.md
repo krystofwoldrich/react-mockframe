@@ -2,7 +2,7 @@
 
 MockFrame is a pnpm workspace monorepo with two packages.
 
-## `src/package` — the published library (`react-mockframe`)
+## `src/package` — the published library (`@krystofs/device-frames`)
 
 - `src/index.ts` — re-exports the public API from `MockFrame.tsx`.
 - `src/MockFrame.tsx` — `MockFrame` (predefined devices) and `CustomMockFrame`
@@ -25,7 +25,7 @@ MockFrame is a pnpm workspace monorepo with two packages.
 
 **Build:** `tsup` emits CJS + ESM + `.d.ts`; lightningcss emits the stylesheets.
 
-## `src/website` — the demo site (`react-mockframe-example`)
+## `src/website` — the demo site (`device-frames-example`)
 
 Vite + React + Tailwind v4 single-page app. Imports the library from source via
 a Vite alias; imports the built CSS from `../package/dist/styles`.
@@ -34,4 +34,4 @@ a Vite alias; imports the built CSS from `../package/dist/styles`.
 
 Vitest (jsdom) for render tests; `expectTypeOf` + `@ts-expect-error` JSX type
 tests guard the discriminated-union API. Run with
-`pnpm --filter react-mockframe test` (runtime + typecheck in one pass).
+`pnpm --filter @krystofs/device-frames test` (runtime + typecheck in one pass).

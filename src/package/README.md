@@ -1,6 +1,6 @@
-# MockFrame
+# Device Frames
 
-Device mockups for React. Showcase your apps in realistic phone, tablet, and laptop frames. Perfect for SaaS landing pages, product demos, and marketing websites.
+`@krystofs/device-frames`: device mockups for React (the `MockFrame` component). Showcase your apps in realistic phone, tablet, and laptop frames. Perfect for SaaS landing pages, product demos, and marketing websites.
 
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-blue.svg)](http://typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,8 +11,9 @@ Device mockups for React. Showcase your apps in realistic phone, tablet, and lap
 
 ## About this fork
 
-This fork of [mbdev3/react-mockframe](https://github.com/mbdev3/react-mockframe) (1.3.0) makes the Apple frames
-follow Apple's real screen shapes and adds more devices.
+This fork of [mbdev3/react-mockframe](https://github.com/mbdev3/react-mockframe) (1.3.0) makes the Apple and
+Google frames follow the real screen and body shapes and adds more devices. It is published on npm as
+`@krystofs/device-frames`; the API is the same as react-mockframe's, so switching only changes the import paths.
 
 - **Superellipse screens.** The screen corners of the Apple frames are superellipses (`|x|^n + |y|^n = 1`),
   fitted to Apple's product bezels, not circles. Each fit is within 0.7 PNG px of Apple's screen edge. This
@@ -29,13 +30,26 @@ follow Apple's real screen shapes and adds more devices.
 - **New Apple frames**, measured from Apple's bezels: iPhone 17 Pro Max, iPhone 18 Pro Max, iPhone Air and
   iPhone 12 mini.
 - **New Google frames**: Pixel 9 Pro, Pixel 10 Pro, Pixel 9 Pro Fold and Pixel 10 Pro Fold (closed and open
-  poses). Sizes come from Google's specs, the devices' Android display configs (screen corner radius, camera
-  cut-out, density) and Chrome DevTools. Body corners, buttons and hinge marks are measured on Google's
-  renders, and the frame colours are Google Store swatches.
+  poses). Screen sizes come from Google's display resolutions and densities (Chrome DevTools for the Pixel 9
+  Pro and 10); buttons and hinge marks are measured on Google's renders, and the frame colours are Google
+  Store swatches.
+- **Pixel frames measured on Google's emulator skins.** The Pixel 10, 10 Pro, 9 Pro, 9 Pro Fold and 10 Pro
+  Fold take their bezels, metal band, punch-hole, screen corners and body corners from the emulator skins in
+  Android Studio (`device-art-resources`). The screens and bodies are superellipses fitted to the skins
+  (within 1.1 px on the screen masks, 1 px on the body outlines); the Pixel 10 family's screens are circles
+  (n = 2), as Google's masks are. Like the Apple band frames, the body and band are drawn as masked layers,
+  so the band keeps its width around the corners. A closed Fold has different corners on its hinge side:
+  small ones on the 9 Pro Fold, and on the 10 Pro Fold a spine beside the body that is shorter than it. The
+  band follows each model's finish in Google's specs: polished on the Pixel 9 Pro and 10 Pro, satin
+  aluminium on the Pixel 10 and both Folds.
 - **Demo site**: a full-screen playground with the device in the middle and a sidebar with all frames, listed
   by platform (iOS, Android, macOS), device options (colour, fold pose, orientation, notch, scale), a
   screenshot upload (an expo.dev screenshot shows until you upload one), export to PNG or WebP, and the code
   snippet.
+- **Reference frames**: the playground can show a bezel image next to the generated frame or on top of it,
+  at the same screen size, to compare them. The images are not in the repository: copy your own Apple bezel
+  PNGs or Android Studio emulator skins into `src/website/reference-frames/` (git-ignored). Its
+  [README](src/website/reference-frames/README.md) has the naming scheme.
 
 ## Features
 
@@ -76,25 +90,25 @@ follow Apple's real screen shapes and adds more devices.
 | MacBook Pro 2020 | - | - | - |
 | MacBook Pro | space-black, silver | - | Notch |
 
-Default screen sizes (CSS px) match each device's real viewport: iPhone 12 mini 360×780, iPhone 17 / 18 Pro 402×874, iPhone 17 Pro Max / 18 Pro Max 440×956, iPhone Air 420×912, Pixel 10 412×924, Pixel 9 Pro / 10 Pro 427×952, Pixel 9 Pro Fold 412×922 (closed) / 852×883 (open), Pixel 10 Pro Fold 412×901 (closed) / 852×883 (open), Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
+Default screen sizes (CSS px) match each device's real viewport: iPhone 12 mini 360×780, iPhone 17 / 18 Pro 402×874, iPhone 17 Pro Max / 18 Pro Max 440×956, iPhone Air 420×912, Pixel 10 412×924, Pixel 9 Pro / 10 Pro 427×952, Pixel 9 Pro Fold 412×924 (closed) / 852×883 (open), Pixel 10 Pro Fold 412×901 (closed) / 852×883 (open), Galaxy S25 360×780. iPad Pro (512×683) and MacBook Pro (960×624) are scaled down from the real 13" and 14" screens, keeping their exact proportions.
 
 `gold` and `natural-titanium` are not iPhone 18 Pro finishes (Apple sells Black, Silver, Glacier and Burgundy). `gold` is Apple's iPhone Air Light Gold applied to the 18 Pro's satin aluminium, and `natural-titanium` is sampled from Apple's iPhone 16 Pro Natural Titanium. Older colour names stay accepted for compatibility: `space-gray` (iPad Pro, MacBook Pro), `porcelain` / `mint` / `rose` (Pixel 10), `phantom-black` / `silver` (Galaxy S25).
 
 ## Installation
 
 ```bash
-npm install react-mockframe
+npm install @krystofs/device-frames
 # or
-pnpm add react-mockframe
+pnpm add @krystofs/device-frames
 # or
-yarn add react-mockframe
+yarn add @krystofs/device-frames
 ```
 
 ## Quick Start
 
 ```tsx
-import { MockFrame } from 'react-mockframe'
-import 'react-mockframe/styles/mockframe.css'
+import { MockFrame } from '@krystofs/device-frames'
+import '@krystofs/device-frames/styles/mockframe.css'
 
 export default function App() {
   return (
@@ -153,6 +167,8 @@ with the perspective of Apple's own render.
   screen readers, so interactive content only works on the left half. Images and videos look right across both.
 - The half turned away from the light is shaded; set the CSS variable `--duo-fold-shade` (default `0.22`) on the
   frame to change it, or `0` to turn it off.
+- Closed, the other half's spine shows on the hinge side. As on Apple's bezel it is bead-blasted, not polished
+  like the band: a fine grain over its colour, and superellipse ends 7 pt from the top and bottom.
 
 ### Pixel 9 Pro Fold and Pixel 10 Pro Fold: closed, open
 
@@ -164,9 +180,16 @@ Google's foldables have two poses: closed shows the outer display, open the near
 ```
 
 - Both poses are naturally portrait; `landscape` turns either one.
-- Sizes come from Google's specs (body in mm, display resolution and PPI), the screen corner radii and camera
-  cut-outs from the devices' Android display configs, and the closed size of the 9 Pro Fold from Chrome
-  DevTools. The closed device has the hinge on the left; the open device has the hinge marks at the fold.
+- Screen sizes come from Google's display resolutions and densities: the closed 9 Pro Fold is 1080×2424 px at
+  420 dpi, 412×924 like the Pixel 10. The bezels, the band, the hinge side, the screen and body corners and the
+  punch-holes are measured on Google's emulator skins. The closed device has the hinge on the left (at the
+  bottom in landscape); the open device has the hinge marks at the fold.
+- The closed device's hinge side is shaded like the rest of the band: its light bends around the hinge-side
+  corners, and on the 10 Pro Fold around the ends of the spine. For straight strips along the hinge instead,
+  add `className="hinge-straight"`. (Without React, the CSS draws the straight strips.)
+- Open, the top and bottom edges have Google's hinge gap in the middle: each half's frame ends in a rounded
+  shoulder and the band bends into the gap; on the 10 Pro Fold the hinge plate shows in its floor. (Without
+  React, the CSS draws a hinge mark instead.)
 
 ### Hide Notch / Dynamic Island
 
@@ -278,7 +301,7 @@ The `color` prop is **type-safe** - TypeScript only allows valid colors for each
 Create your own device frames with `CustomMockFrame`:
 
 ```tsx
-import { CustomMockFrame } from 'react-mockframe'
+import { CustomMockFrame } from '@krystofs/device-frames'
 
 <CustomMockFrame
   width={375}
@@ -330,19 +353,19 @@ Sizes below are minified (gzipped in parentheses).
 
 ```tsx
 // Full bundle - all devices (~50KB min / ~10KB gzip)
-import 'react-mockframe/styles/mockframe.css'
+import '@krystofs/device-frames/styles/mockframe.css'
 
 // iPhones only (~36KB min / ~7.4KB gzip)
-import 'react-mockframe/styles/mockframe-iphones.css'
+import '@krystofs/device-frames/styles/mockframe-iphones.css'
 
 // Android only (~5KB min / ~1.4KB gzip)
-import 'react-mockframe/styles/mockframe-android.css'
+import '@krystofs/device-frames/styles/mockframe-android.css'
 
 // Tablets only (~5KB min / ~1.5KB gzip)
-import 'react-mockframe/styles/mockframe-tablets.css'
+import '@krystofs/device-frames/styles/mockframe-tablets.css'
 
 // Laptops only (~6KB min / ~1.7KB gzip)
-import 'react-mockframe/styles/mockframe-laptops.css'
+import '@krystofs/device-frames/styles/mockframe-laptops.css'
 ```
 
 ## TypeScript
@@ -358,7 +381,7 @@ import type {
   DeviceHasLandscape,   // Check if device supports landscape
   DevicePose,           // Fold poses of a foldable ('closed' | 'half-open' | 'open')
   CustomMockFrameProps,
-} from 'react-mockframe'
+} from '@krystofs/device-frames'
 
 // Get available colors for a specific device
 type iPhone17Colors = DeviceColor<'iPhone 17'>
@@ -372,7 +395,7 @@ type CanRotate = DeviceHasLandscape<'iPad Pro'>
 Access device data programmatically:
 
 ```tsx
-import { DeviceNames, DeviceOptions } from 'react-mockframe'
+import { DeviceNames, DeviceOptions } from '@krystofs/device-frames'
 
 // Array of all device names
 console.log(DeviceNames)
@@ -398,6 +421,7 @@ The interactive demo website includes:
 - **Background Options** - Solid colors and gradient presets
 - **Export to PNG/WebP** - Download mockups with transparent backgrounds
 - **Live Code Preview** - Copy-paste ready code snippets
+- **Reference Frames** - Compare a frame with a bezel image of your own, side by side or as an overlay (see `src/website/reference-frames/README.md`)
 - **Dark/Light Theme** - Full theme support
 
 ## Browser Support
@@ -413,7 +437,11 @@ Device frame styles are adapted from [Marvel devices.css](https://github.com/mar
 
 ## Author
 
-**Mohammed Banani** — [@mbdev3](https://github.com/mbdev3) · [Matter Development](https://matterdevelopment.com/?utm_source=react-mockframe&utm_medium=readme)
+This fork is maintained by [Krystof Woldrich](https://github.com/krystofwoldrich) and published as
+[`@krystofs/device-frames`](https://www.npmjs.com/package/@krystofs/device-frames).
+
+The original [react-mockframe](https://github.com/mbdev3/react-mockframe) is by **Mohammed Banani** —
+[@mbdev3](https://github.com/mbdev3) · [Matter Development](https://matterdevelopment.com/?utm_source=react-mockframe&utm_medium=readme)
 
 ## Contributing
 
